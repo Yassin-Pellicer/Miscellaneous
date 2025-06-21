@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Syncopate:wght@400;700&display=swap');
+
+*{
+    box-sizing: border-box;
+    margin: 0px;
+}
+
+body{
+    margin: 0px;
+}
+
+.navButton{
+    font-family: 'Montserrat', 'sans-serif';
+    font-size: 15px;
+    font-weight: bold;
+    padding: 20px;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0);
+    margin: 10px;
+}
+
+.navButtonPROJECTS{
+    font-family: 'Montserrat', 'sans-serif';
+    font-size: 15px;
+    font-weight: bold;
+    padding: 20px;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0);
+    margin: 10px;
+}
+
+.navButton:hover{
+    cursor: pointer;
+    transition: 0.1s;
+    background:aliceblue
+}
+
+.navButtonPROJECTS:hover{
+    cursor: pointer;
+    transition: 0.1s;
+    color: aliceblue;
+
+}
+
+.titleImportant{
+    -webkit-text-stroke: 0.5px #99e7ff;
+    font-family:"Syncopate";
+    font-size: 8vw;
+    text-align: center;
+    letter-spacing: "10px";
+    
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+    
+  
+    background-image: url("./Elements/ElementImages/Sky.jpg");
+    background-size: 120%;
+
+    animation: bg-animation 30s cubic-bezier(0.3,0,0.7,1) infinite;
+}
+
+@keyframes bg-animation {
+  0% {background-position: 0% 0%;}
+  50% {background-position: 100% 100%;}
+  100% {background-position: 0% 0%;}
+}

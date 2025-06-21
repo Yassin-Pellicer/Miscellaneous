@@ -1,0 +1,35 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: black;
+}
+
+h1{
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    align-content: center;
+    padding: 20px;
+    font-size: 100px;
+    color:white;
+}
+
+canvas{ 
+    border: 1px solid rgb(123, 255, 0);
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+p{
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    align-content: center;
+    padding: 20px;
+    color:white;
+    font-size: 50px;
+}

@@ -1,0 +1,185 @@
+@import url("https://fonts.googleapis.com/css2?family=Nuosu+SIL&display=swap stylesheet");
+
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.HeaderMain{
+    background-attachment: fixed;
+    background: linear-gradient(to bottom, rgba(255,255,255,0) 20%,
+    rgba(255,255,255,1)), url('./imgs/wp8922128-blue-sky-summer-wallpapers.jpg');
+    background-size: 100vw;
+}
+
+.HeaderMain h1{
+    width: 100%;
+    padding-top: 3vw;
+    padding-bottom: 3vw;
+    font-size: 8vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-style: italic;
+}
+
+.HeaderMain p{
+    padding-left: 20%;
+    padding-right: 20%;
+    padding-bottom: 5%;
+    font-size: 1.7vw;
+    text-align: center;
+    font-weight: 500;
+    font-style: italic;
+}
+
+.PostHeaderImage{
+    background-attachment: fixed;
+    background: linear-gradient(to top, rgba(255,255,255,0),
+    rgba(255,255,255,1)), url('./imgs/Mountain_Lake_Nature_4k_HD_Landscape_3840x2400.jpg');
+    background-size: 100vw;
+    overflow: hidden;
+}
+
+.carolina{
+    padding-top: 5vw;
+    padding-left: 10vw;
+    padding-bottom: 5vw;
+    float: left;
+}
+
+.PostHeaderImage h1{
+    font-size: 1.3vw;
+    text-align: center;
+    padding-right: 10vw;
+    padding-left: 10vw;
+    padding-top: 5vw;
+    font-style: italic;
+    font-weight: 500;
+}
+
+.container{
+    width: 75vw;
+    height: 30vw;
+    display: flex;
+    background-color: rgb(198, 239, 255);
+    margin-left: 10vw;
+    margin-right: 10vw;
+    margin-bottom: 4.5vw;
+    position: relative;
+
+    border-radius: 3vw;
+}
+
+.bannerFactsDeVerano{
+    padding-top: -2vw;
+    background-attachment: fixed;
+    background: linear-gradient(to bottom, rgba(255,255,255,0),
+    rgba(255,255,255,1)), url('./imgs/Mountain_Lake_Nature_4k_HD_Landscape_3840x2400new.jpg');
+    background-size: 100vw;
+    overflow: hidden;
+}
+
+.bannerFactsDeVerano h1{
+    width: 100%;
+    padding-top: 1vw;
+    padding-bottom: 3vw;
+    font-size: 4.7vw;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-style: italic;
+}
+
+.factsDeVerano{
+    background-attachment: fixed;
+    background: linear-gradient(to top, rgba(255,255,255,0),
+    rgba(255,255,255,1)), url('./imgs/wallhaven-6q3kpl.jpg');
+    background-size: 100vw;
+    overflow: hidden;
+    position: relative;
+}
+
+.factsDeVerano .container3 h1{
+    width: 100%;
+    padding-top: 3vw;
+    padding-bottom: 3vw;
+    font-size: 4.5vw;
+    justify-content: center;
+    text-align: center;
+    font-style: italic;
+}
+
+.factsDeVerano .container2 h1{
+    width: 100%;
+    padding-top: 2vw;
+    padding-bottom: 2vw;
+    font-size: 4vw;
+    justify-content: center;
+    text-align: center;
+    font-style: italic
+}
+
+.factsDeVerano p{
+    width: 100%;
+    font-size: 2vw;
+    justify-content: center;
+    text-align: center;
+    padding-left: 2.5vw;
+    padding-right: 2.5vw;
+}
+
+.factsDeVerano .container2{
+    width: 40vw;
+    height: 30vw;
+    background-color: rgb(198, 239, 255);
+    margin-left: 5vw;
+    margin-bottom: 4.5vw;
+    margin-top: 5vw;
+    float: left;
+    border-radius: 3vw;
+}
+
+.factsDeVerano .container3{
+    width: 40vw;
+    height: 30vw;
+    float: left;
+    background-color: rgb(198, 239, 255);
+    margin-bottom: 4.5vw;
+    margin-top: 5vw;
+    margin-left: 7.5vw;
+    border-radius: 3vw;
+}
+
+.factsDeVerano .container4{
+    width: 75vw;
+    height: 20vw;
+    display: flex;
+    background-color: rgb(198, 239, 255);
+    margin-left: 10vw;
+    margin-right: 10vw;
+    margin-bottom: 4.5vw;
+    position: relative;
+    overflow: hidden;
+
+    border-radius: 3vw;
+}
+
+.container4 p{
+    padding-top: 0vw;
+    padding-bottom: 0vw;
+    padding-left: 7w;
+    font-size: 1.5vw;
+    justify-content: left;
+    font-style: italic
+}
+
+.container4 div h1{
+    padding-top: 2vw;
+    padding-bottom: 2vw;
+    padding-left: 3vw;
+    font-size: 4vw;
+    justify-content: left;
+    font-style: italic
+}

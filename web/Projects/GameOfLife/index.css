@@ -1,0 +1,105 @@
+@import url("https://fonts.googleapis.com/css2?family=Nuosu+SIL&display=swap stylesheet");
+
+*{
+    padding: 0%;
+    box-sizing: border-box;
+    margin: 0%;
+    user-select: none;
+}
+.mainTitle{
+    font-size: 100px;
+    padding-top: 50px;
+    display: flex;
+    justify-content: center;
+    font-style: italic;
+    text-align: center;
+}
+p{
+    justify-content: center;
+    font-style: italic;
+    text-align: center;
+    margin-left: 200px;
+    margin-right: 200px;
+    margin-top: 50px;
+    font-size: 17.5px;
+}
+canvas{
+    padding-top: 50px;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 700px;
+}
+.buttons{
+    font-size: 50px;
+    display: flex;
+    justify-content: space-around;
+    margin-top: 50px;
+    padding-top: 10px;
+    margin-bottom: 50px;
+}
+.Run{
+    font-size: 50px;
+    justify-content: center;
+    padding: 25px;
+    padding-top: 10px;
+    border: none;
+    outline: none;
+    border-radius: 30%;
+    font-family: 'Nuosu SIL';
+    width: 175px;
+}
+.Clear{
+    font-size: 50px;
+    justify-content: center;
+    padding: 25px;
+    padding-top: 10px;
+    border: none;
+    outline: none;
+    border-radius: 30%;
+    font-family: 'Nuosu SIL';
+    width: 175px;
+}
+.Step{
+    font-size: 50px;
+    justify-content: center;
+    padding: 25px;
+    padding-top: 10px;
+    border: none;
+    outline: none;
+    border-radius: 30%;
+    font-family: 'Nuosu SIL';
+    width: 175px;
+}
+.Clear:hover{
+    cursor: pointer;
+    transition:cubic-bezier(0, 1, 0, 1);
+    background-color: rgb(255, 166, 0);
+    transition: 0.2s all ease;
+    color:white;
+}
+.Run:hover{
+    cursor: pointer;
+    transition:cubic-bezier(1, 0, 0, 1);
+    background-color: rgb(255, 166, 0);
+    transition: 0.2s all ease;
+    color:white;
+}
+.Step:hover{
+    cursor: pointer;
+    transition:cubic-bezier(1, 0, 0, 1);
+    background-color: rgb(255, 166, 0);
+    transition: 0.2s all ease;
+    color:white;
+}
+.Run:active{
+    font-size:30px
+}
+.Step:active{
+    font-size:30px
+}
+.Clear:active{
+    font-size:30px
+}

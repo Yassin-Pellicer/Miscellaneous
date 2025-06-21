@@ -1,0 +1,33 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+#firstCanvas{
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    margin: auto;
+    margin-top: 75px;
+    margin-bottom: 75px;
+}
+
+#secondCanvas{
+    align-items: center;
+    background-color: black;
+    justify-content: center;
+    display: flex;
+    margin: auto;
+    margin-top: 75px;
+    margin-bottom: 75px;
+}
+
+#thirdCanvas{
+    align-items: center;
+    background-color: black;
+    justify-content: center;
+    display: flex;
+    margin: auto;
+    margin-top: 75px;
+    margin-bottom: 75px;
+}

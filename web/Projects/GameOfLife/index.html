@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Conway's Game Of Life</title>
+    <link rel="stylesheet" href="index.css">
+</head> 
+<body>
+    <h1 class = mainTitle>
+        Conway's Game of Life
+    </h1>
+    <p>
+        <b>Conway's Game of Life follows four very simple rules:</b> 
+        <br>
+        <br> 1. Any live cell with fewer than two live neighbours dies, as if by underpopulation.
+        2. Any live cell with two or three live neighbours lives on to the next generation.
+        <br> 3. Any live cell with more than three live neighbours dies, as if by overpopulation.
+        4. Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+        <br>
+        <br> <b>Use "WASD" keys to move around a cursor through the grid</b> that will allow you to place cells using the "P" key.
+        <br> The page <b>always generates a random pattern when it first loads.</b> You can always refresh the page to obtain a new pattern.
+    </p>
+    <canvas>
+    </canvas>
+    <div class="buttons">
+        <button step-button class="Step">
+            Step
+        </button>
+        <button clear-button class="Clear">
+            Clear
+        </button>
+        <button run-button class="Run">
+            Run
+        </button>
+    </div>
+    <script src="index.js"></script>
+    <!--script src debe aparecer DESPUÉS de cualquier elemento que opere la js file-->
+</body>
+</html>

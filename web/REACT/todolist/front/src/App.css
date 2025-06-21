@@ -1,0 +1,115 @@
+body{
+  background-color: #c9daff;
+  margin: 0px;
+}
+
+.Main_Title{
+  margin: 50px;
+  text-align: center;
+  font-size: 140px;
+  padding: 20px;
+  font-weight: 1600;
+}
+
+.Main_Title_Tasks{
+  text-align: center;
+  font-size: 70px;
+}
+
+@media (max-width: 480px) {
+  .DontHaveAcc{
+    font-size: 15px;
+  }
+  .RegHere{
+    font-size: 15px;
+  }
+  .log-in{
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 600px){
+  .Main_Title{font-size: 70px;}
+  .Main_Title_Tasks{font-size: 50px;}
+  .logContainer{
+    margin-left: 40px !important;
+    margin-right: 40px !important;
+  }
+  .containerSign{
+    padding: 30px !important;
+    width: auto !important;
+  }
+}
+
+@media (max-width: 330px) {
+  .Main_Title{font-size: 40px; margin: 10px;}
+  .logContainer{
+    text-align: center; 
+    margin:auto !important;
+    margin-left: 20px !important;
+    margin-right: 20px !important;
+  }
+}
+
+.SignUpButtonDiv{
+  text-align: center;
+  justify-content: center;
+}
+
+.SignUpButton{
+  font-size: 16px;
+  padding-left: 20px;
+  padding-right: 20px;
+  text-align: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  display: inline-block;
+  border-radius: 12px;
+  font-family:'Times New Roman', Times, serif;
+  font-weight: bolder;
+}
+
+@media (max-width:800px){
+  .TaskPage{
+    flex-wrap: wrap !important;
+  }
+
+  .TaskPage > *{
+    margin-bottom: 20px;
+  }
+}
+
+.ql-toolbar.ql-snow {
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  padding: 8px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  white-space: wrap;
+  position: relative;
+
+}
+
+.ql-bubble {
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  padding: 8px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  white-space: wrap;
+  position: relative;
+  overflow: auto;
+}
+
+.ql-container {
+  border-bottom-left-radius: 10px;
+  max-height: 180px;
+}
+
+.ql-editor {
+  overflow-x: auto;
+
+  width:400px;
+}
