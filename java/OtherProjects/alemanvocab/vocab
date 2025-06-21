@@ -1,0 +1,510 @@
+der Name, -n: nombre completo.
+der Vorname: nombre.
+der Familienname: apellido.
+der Nachname: apellido.
+die Straβe, -n: calle.
+die Hausnummer, -n: nº de la casa.
+die Nationalität, -en: la nacionalidad.
+der Wohnort, -e: lugar de residencia.
+die Vorwahl, en: prefijo.
+die Postleitzahl, -en: codigo postal.
+das Telefon, -e: teléfono.
+die Telefonnummer, -n: número de teléfono.
+die Handynummer, -n: número de móvil.
+das Handy, -s: teléfono móvil.
+die Addresse, -n: la dirección.
+das Sprachenzentrum, -en: centro de lenguas.
+das Gespräch, -e: la conversación.
+der Kursteilnehmer, -: participante del curso masculino.
+die Kursteilnehmerin, -nen: participante del curso femenino.
+die Sprache, -n: la lengua.
+die Zielsprache: target language.
+die Muttersprache: lengua materna.
+der Tandempartner, -: compañero de tándem.
+die Tandempartnerin, -nen: compañera de tándem.
+die Sprachschule, -n: escuela de lenguas.
+der Kurs, -e: el curso.
+der Intensivkurs: el curso intensivo.
+der Vorbereitungskurs: curso de preparación.
+der Sommerkurs: curso de verano.
+Lernen: aprender.
+Verstehen: comprender.
+Sprechen: hablar.
+Fragen: preguntar
+Schreiben: escribir.
+Buschtabieren: deletrear.
+die Universität, -en: universidad.
+der Student, -en: estudiante.
+die Studentin, -nen: estudiantA.
+der/die Studierende, -n: estudiantes.
+der Professor, -en: profesor.
+die Professorin, -nen: profesora.
+die Architketur: arquitectura.
+die Wirtschaft: economía.
+die Chemie: química.
+die Elektrotechnik: ingeniería eléctrica.
+die Germanistik: filología germánica.
+die Informatik: informática.
+die Mathematik: matemáticas.
+die Medizin: medicina.
+die Philosophie: filosofía.
+die Physik: física.
+die Klassenzimmer: aula.
+die Wintersemester: primer semestre.
+die Sommersemester: segundo semestre.
+der Lehrer, -: profesor.
+die Lehrerin, -nen: profesora.
+der Sprachlehrer: profesora de lengua.
+der Deutschlehrer: profesora de alemán.
+der Ingenieur, -e: ingeniero.
+die Ingenieurin, -nen: ingeniera.
+der Schüler, -: alumnos.
+der Schriftsteller, -: escritor.
+die Schriftstellerin, -nen: escritora.
+der Kellner, -: el mesero (camarero).
+die Kellnerin, -nen: la mesera (camarera).
+das Hobby, -s: el hobby.
+Afrika: África.
+Amerika: América.
+Asien: Asia.
+Australien: Australia.
+Europa: Europa.
+Gut: bueno.
+Neu: nuevo.
+Polyglott: políglota.
+International: internacional.
+Beliebt: popular.
+Nett: bueno, mono.
+Groβ: grande.
+Sympatisch: simpático.
+Interessant: interesante.
+Alt: viejo, mayor. (Old).
+Allein: solo/a.
+Unenschieden: empatado.
+Modern: moderno.
+Altmodisch: viejo.
+Normal: normal.
+Allein: solo.
+Natürlich:  natturalmente.
+Unmöglich: imposible.
+Traditionell: tradicional.
+Ziemlich: bastante.
+Relativ: pariente/relativo.
+Spät: tarde/avanzado/tardío.
+Getrennt: separado.
+Groβ: grande.
+Klein: separado.
+Wenig: escaso/raro.
+lecker: delicioso.
+süβ: dulce.
+Ausverkauft: vendido.
+billig: barato.
+teuer: caro.
+stressig: estresante.
+langweilig: aburrido.
+interessant: interesante.
+krank: enfermo.
+gesund: saludable.
+toll: excelente.
+spät: tarde.
+früh: pronto.
+Auch: también, además.
+Noch: todavía.
+Noch nicht: todavía no.
+Schon: ya.
+Dort: allí.
+Jetzt: ahora.
+Ein bisschen: un poco.
+Zussamen: juntos.
+Hier: ayer.
+Möglich: posible.
+Unmöglich: imposible.
+morgen: mañana (temporal).
+übermorgen: pasado mañana.
+heute: hoy
+früher: previamente.
+nur: sin/solamente/sólo.
+sogar: incluso.
+mehr: más.
+wohl: probablemente.
+geschnitten: en una sola pieza.
+Wie?: Cómo?
+Wo?: Dónde?
+Woher?: De dónde?
+Wohin?: A dónde?
+Was?: Qué?
+Welche?: Cuáles?
+Wer?: Quién?
+Wann?: Cuándo?
+Wem?: a quién?
+Wen?: quién?
+Wie viel?: cuánto/a?
+die Technik, -en: tecnología. 
+der Plattenspieler, -: tocadiscos. 
+die Schallplatte, -n: placa de sonido. 
+das Tablet, -s: la tablet. 
+die Rechensmachine, -n: calculadora. 
+das Telefon, -e: el teléfono. 
+das Navigationsgerät, -e: navegador. 
+die Kamera, -s: la cámara. 
+das Handy, -s: el móvil. 
+die Diskette, -n: el disquete. 
+der Akku, -s: la batería (acumulador). 
+die Kassette, -n: el caset. 
+die Videokassette: el videocaset. 
+die Musikkassette: la cinta de música. 
+der USB-Stick, -s: stick usb. 
+der Computer, -: el ordenador. 
+der Laptop, -s: el portátil. 
+das Smartphone, -s: el smartphone. 
+der Fotoapparat, -e: la cámara. 
+das Foto, -s: fotografía 
+der mp3-Spieler, -: reproductor MP3.
+der Stambaum, ¨-e: árbol genealógico.
+der Partner, -: pareja.
+die Partnerin, -nen: pareja (femenino).
+Geschieden: divorciado.
+Getrennt leben: vivir separados.
+der Single, -s: único.
+Heiraten: casar.
+Verheiratet: casados.
+Unverheiratet: no casado, soltero.
+Erziehen: decir (contar, “tell”).
+die Familie, -n: la familia.
+die Kleinfamilie: la pequeña familia.
+die Patchworkfamilie: familia ensamblada.
+das Mitglied, -er: miembro.
+das Familienmitglied: miembro de la familia.
+die Eltern: padres.
+die Schwiegereltern: suegros.
+der Vater, ¨-: padre.
+die Mutter, ¨-: madre.
+das Kind, -er: niño.
+das Einzelkind: hijo único.
+die Tochter, ¨-: la hija.
+der Sohn, ¨-e: el hijo.
+die Groβeltern: los abuelos.
+die Groβmutter, ¨-: la abuela.
+der Groβvater, ¨-: el abuelo.
+der Ungroβvater, ¨-: bisabuelo.
+die Ungroβmutter, ¨-: la bisabuela.
+der Enkel, -: el nieto.
+der Urenkel: el bisnieto.
+die Enkelin, -nen: la nieta.
+die Geschwister: Los hermanos.
+der Bruder, ¨-: el hermano.
+die Schwester, -n: la hermana.
+die Schwägerin, -nen: la cuñada.
+der Schwager, ¨-: el cuñado.
+der Onkel, -: el tío.
+die Tante, -n: la tía.
+der Neffe, -n: el sobrino.
+die Nichte, -n: la sobrina.
+Väterlicherseits: por parte paterna.
+Mütterlicherseits: por parte materna.
+Erzieht: criar.
+Alleinerziehende Mutter: madre soltera que cría sola a los hijos.
+die Ehe: matrimonio.
+die Ehemann: esposo.
+Die Ehefrau: esposa.
+Das Ehepaar: pareja casada.
+Aber: pero.
+Um: alrededor de..
+Und: y.
+Oder: o.
+Aus/In: en.
+Sondern: sino.
+Denn: después.
+Als: como. As.
+der Apfel, ¨-: la manzana.
+die Weintraube, -n: racimo de uvas.
+die Orange, -n: la naranja.
+die Erdbeere, -n: la fresa.
+die Banane, -n: el plátano.
+die Bohne, -n: el frijol (the bean).
+die Karotte, -n: la zanahoria.
+der Champignon, -s: el champiñón.
+die Gurke, -n: el pepino.
+das Fleisch: la carne.
+das Hackfleisch: la carne picada.
+das Bio-fleisch: la carne bio.
+das Steak, -s: el chuletón.
+die Wurst, ¨-e: la salchicha (de bratwurst).
+die Geflügelfleischwurst: la salchicha de carne de animales alados.
+der Thunfisch: atún.
+das Milchprodukt, -e: productos lácteos.
+der/das Joghurt, -s: el yougurt.
+der Käse: el queso.
+der Gouda, -s: el gouda.
+die Milch: la leche.
+die Butter: la mantequilla.
+das Ei, -er: el huevo.
+das Brot, -e: el pan.
+das Brötchen, -: el bollo de pan.
+die Teigwaren: la pasta.
+das Mehl: la harina.
+der Reis: el arroz.
+der Zucker: el azúcar.
+die Marmelade, -n: la mermelada.
+der Keks, -e: la galleta.
+die Praline, -n: el bombón/el praliné.
+die Schokolade, -n: el chocolate.
+der Tee: el té.
+der Orangensaft, ¨-e: el zumo de naranja.
+das Salz: la sal.
+das Pfeffer: la pimienta.
+die Konserve, -n: la conserva.
+das Müsli, -s: el muesli.
+die Tiefkühlkost: la comida congelada.
+die Mayonnaise: la mayonesa.
+das Öl, -e: el huevo.
+die Kartoffelchips: las patatas fritas.
+der Senf: la mostaza.
+die Flasche, -n: la botella.
+das Glas, ¨-er: el vaso.
+der Becher, -: la copa.
+die Packung, -en: los paquetes.
+das Päckchen, -: el paquete.
+die Schachtel, -n: las cajas.
+die Tafel, -n: las tablas.
+der Beutel, -: el bolso.
+die Tüte, -n: la bolsa.
+die Tube, -n: el tubo.
+die Schale, -n: los tazones.
+das Stück, -e: la pieza.
+das Kilo: un kilo.
+das Gramm: un gramo.
+das Pfund: una libra (peso).
+der Liter: un litro.
+der Supermarkt, ¨-e: el supermercado.
+das Lebensmittel, -: la comida.
+das Produkt, -e: el producto.
+die Theke, -n: el mostrador.
+die Kühlregal: productos frescos.
+die Bäckerei, -en: las panaderías.
+der Prospekt, -e: el prospecto.
+das Angebot, -e: la oferta.
+der Einkaufszettel, -: la lista de la compra.
+die Einkaufsliste, -n: la lista de la compra.
+der Kunde, -n: el cliente.
+die Kundin, -nen: la clienta.
+der Hafen, ¨-: el puerto.
+das Museum, Museen: el museo.
+der Strand, ¨-e: la playa.
+die Insel, -n: la isla.
+der Fluss, ¨-e: el río.
+der Berg, -e: las montañas.
+die Kirche, -n: las iglesias.
+das Denkmal, ¨-er: el monumento.
+der Ausflug, ¨-e: la excursión.
+die Landkarte, -n: el mapa.
+besichtigen: visitar.
+der Verkäufer, -: el vendedor.
+die Verkäuferin, -nen: la vendedora.
+der Kassierer, -: cajero.
+die Kassiererin, -nen: cajera.
+die Bürokraft, ¨-e: el empleado.
+der Programmierer, -: el programador.
+die Programmiererin, -nen: la programadora.
+der Sänger, -: el cantante.
+die Sängerin, -nen: la cantante.
+das Zeitmanagement: la gestión del tiempo.
+der Kalender, -: el calendario.
+das Tor: el porton.
+der Bleistift, -e: el lápiz.
+das Heft, -e: la revista.
+die Kugelschreiber, -: el bolígrafo.
+der Radiergummi, -s: la goma de borrar.
+das Bild, -er: el dibujo, retrato estampa.
+die Waschmaschinen, -en: la lavadora.
+das Regal, -e: la estantería.
+der Trockner, -: el secador
+der Müll: la basura (tirar a la basura)
+die Lampe, -n: la lámpara.
+das Fenster, -: la ventana.
+die Strand: la playa.
+die Strandpromenade: el paseo marítimo.
+Eins: 1 
+Zwei: 2
+Drei: 3
+Vier: 4
+Fünf: 5
+Sechs: 6 
+Sieben: 7
+Acht: 8
+Neun: 9
+Zehn: 10
+Elf: 11 
+Zwolf: 12
+Dreizehn: 13
+Vierzehn: 14
+Fünfzehn: 15
+Sechzehn: 16
+Siebzehn: 17
+Zwanzig: 20
+Einundzwanzig: 21
+Zweiundzwanzig: 22
+Dreiβig: 30
+Vierzig: 40
+Fünfzig: 50
+einhundert: 100
+zweihundert: 200
+eintausend: 1000
+eine Million: 1000000
+Einhundertdreiundneunzig: 193
+Lunes: Montag.
+Martes: Dienstag.
+Miércoles: Mittwoch.
+Jueves: Donnerstag.
+Viernes: Freitag.
+Sábado: Samstag.
+Domingo: Sonntag
+Der Donner: rayo.
+die Zeit, -en: el tiempo, los tiempos.
+Offnungszeiten: horario de apertura.
+der Hafen: puerto.
+der Flughafen: aeropuerto.
+Jemand(-en): alguien / a alguien.
+Niemand(-en): nadie / a nadie.
+die Freizeit: el tiempo libre.
+der Stress: el estrés.
+die Grippe: gripe.
+das Pech: mala suerte.
+das Glück: la buena suerte.
+das Pech: mala suerte.
+das Glück: la buena suerte.
+der Pullover, -: el sueter.
+die Mahlzeit, -en: la comida.
+das Frühstück, -e: el desayuno.
+das Mittagessen, -: el almuerzo.
+das Abendessen, -: la cena.
+Das restaurant, -s: los restaurantes.
+Der Gast, ¨-e: los invitados.
+Das gericht, -e: el plato.
+Das Menü, -s: el menú.
+Die Vorspeise, -n: los aperitivos.
+Die Spezialität, -en: la especialidad.
+Das Wasser: el agua.
+Das Mineralwasser: el agua mineral.
+Die Kohlensäure: ácido carbónico.
+Die Cola: cocacola.
+Die Limonade,-n: la limonada.
+Der Alkohol: el alcohol.
+Das Bier, -e: la cerveza.
+Der Wein, -e: el vino.
+Der Weiβwein: el vino blanco.
+Der Rotwein: el vino tinto.
+Der Salat, -e: la ensalada.
+Die Suppe, -n: la sopa.
+Das Schnitzel, -: el filete empanado.
+Die Pommes frites: las patatas fritas.
+Das Rindfleisch: la carne de vacuno.
+Der Burger: la hamburguesa.
+Der Fisch, -e: el pescado.
+Das Fischfilet,-s: el filete de pescado. 
+Die Kartoffel ,-n: la zanahoria.
+Das desseret, -s: el postre.
+Die Sahne: la crema.
+Das Eis: el hielo.
+Der Apfelstrudel, -: el strudel de manzana.
+Das Trinkgeld: la propina.
+Servieren: atender.
+Bestellen: ordenar.
+Zahlen: Contar.
+Kosten: Costar.
+Essen: Comer.
+Trinken: Beber.
+Vegetarisch: Vegetariano.
+Vegan: Vegano.
+Geöffnet: Abierto.
+Geschlossen: Cerrado
+Mensa: cantina
+die Flasche: la botella.
+das Glas: el cristal / el vaso.
+die Dose: la lata.
+der Becher: la copa.
+die Packung / das Päckchen: el paquete.
+die Schachtel: la caja.
+die Tafel: la pizarra.
+der Beutel / due Tüte: la bolsa.
+die Tube: el tubo.
+die Schale: la cáscara.
+nicht zählbar: sin envoltorio.
+der Schnee: nieve.
+der Wind: viento.
+die Sonne: el sol.
+der Regen: la lluvia.
+die Wolke: la nube.
+der Wetterbericht: el pronóstico.
+die Sonne scheint: hace sol.
+Es regnet: llueve.
+Es schneit: nieva.
+Es ist bewölkt: está nublado.
+Es ist windig: hace viento.
+Es ist kalt: hace frío.
+Es ist warm: hace calor.
+Heissen: llamarse (me llamo Yassin).
+Kommen: venir.
+Vorstellen: introducir/avanzar.
+Wohnen: vivir en.
+Machen: hacer.
+Beginnen: comenzar.
+Sein: ser.
+Lernen: aprender.
+Verstehen: comprender.
+Sprechen: hablar.
+Fragen: preguntar
+Schreiben: escribir.
+Buschtabieren: deletrear.
+Es gibt: hay.
+Essen: comer.
+Anzeigen: mostrar.
+Besuchen: visitar.
+Funktionieren: funcionar.
+Glauben: creer.
+Öffnen: abrir.
+Schlieβen: concluir.
+Nehmen: tomar.
+Brauchen: necesitar.
+Bekommen: convertirse.
+Benutzen: usar.
+Leben: vivir.
+Erzählen: contar
+Kennen: saber.
+Treffen: reunirse.
+Duschen: tomar una ducha.
+Früchstücken: desayuno.
+Besuchen: visitar.
+Planen: planificar.
+Halten: mantener.
+Schlafen: dormir.
+Finden: encontrar.
+Dauern: ultimo.
+darf es sonst noch etwas sein?: quieren algo más?
+gern : gustosamente
+darfen : tener permiso / poder
+leider : por desgracia
+Verwender: emplear / usar.
+Wirklich: realmente, de verdad.
+Reisen: viajar.
+klausur : examen
+die Refer�t : la presentaci�n
+verneint : denegado
+Satz : Frase
+Ganzen : Completo
+Fast : Casi
+bezahlen : pagar
+Stunden : horas.
+Anfang : comeinzo
+die honig, -e : la miel
+Verfassung : Constituci�n.
+Kaufen : comprar
+Verkaufen : Vender
+Gar : en su punto / suficientemente cocido / en absoluto.
+dabei : incluso
+bediegunstheke : mostrador
+Schmecken : saber (sentido del gusto)
+Magen : gustar.
+nehmen : tomar
+nachspeise : postre
+jeden : cualquiera/cada uno/todos y cada uno
