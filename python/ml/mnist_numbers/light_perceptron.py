@@ -46,7 +46,7 @@ def cross_entropy(y_pred, y_true):
     loss = -np.sum(y_true * np.log(y_pred + 1e-9)) / m
     return loss
 
-def train(x, y, epochs=10, lr=0.01, batch_size=32):
+def train(x, y, epochs=50, lr=0.001, batch_size=16):
     global W1, b1, W2, b2
     m = x.shape[0]
     
@@ -96,7 +96,7 @@ def accuracy(x, y_true):
     y_pred = predict(x)
     return np.mean(y_pred == y_true)
 
-train(x_train, y_train_oh, epochs=50, lr=0.01)
+train(x_train, y_train_oh, epochs=50, lr=0.001)
 print("Test Accuracy:", accuracy(x_test, y_test))
 
 np.savez("weights.npz", W1=W1, b1=b1, W2=W2, b2=b2)

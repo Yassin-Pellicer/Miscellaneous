@@ -304,7 +304,7 @@ if __name__ == "__main__":
         x_val, y_val_oh,
         epochs=50,
         learning_rate=0.001,
-        batch_size=128,
+        batch_size=32,
         verbose=True
     )
     
