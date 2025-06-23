@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "child_process";
 import { writeFile, unlink } from "fs/promises";
 import { v4 as uuidv4 } from "uuid";
+import os from "os";
 import path from "path";
 
 // Force Node.js runtime
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
     const base64Data = image.replace(/^data:image\/png;base64,/, "");
     
     // Write image to temp file
-    const tempFilename = `/tmp/${uuidv4()}.png`;
+    const tempFilename = path.join(os.tmpdir(), `${uuidv4()}.png`);
     await writeFile(tempFilename, base64Data, "base64");
 
     // Get the absolute path to the Python script
