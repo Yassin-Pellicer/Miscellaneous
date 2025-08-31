@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 
-def circle_crop_grayscale(image_path, size=(500, 500), return_image=False, show=False, contrast=2.0):
+def circle_crop_grayscale(image_path, size=(500, 500), return_image=False, show=False, contrast=1.5):
     """
     Load an image, crop it into a circular frame with transparency outside,
     convert it to grayscale, and normalize pixel values to [0, 1].
@@ -136,7 +136,6 @@ def score(array, source, destination, canvas):
     
     darkness_score = 0      # How much darkness this line covers
     overlap_penalty = 0     # How much it overlaps existing lines
-    canvas_benefit = 0      # Reward for connecting to existing lines
     valid_pixels = 0        # Count of valid pixels on this line
     
     for point in linePoints:
@@ -167,7 +166,7 @@ def score(array, source, destination, canvas):
         return -1000  # Very bad score for invalid lines
     
     # Final score with multiple components
-    base_score = darkness_score - overlap_penalty*0.10
+    base_score = darkness_score - overlap_penalty*0.125
     
     # Normalize by line length and add connectivity
     final_score = (base_score / valid_pixels)
@@ -331,7 +330,7 @@ class RealTimeLineArt:
         return self.solution
 
 
-def greedy_lineart_realtime(points, img_route, size=(500, 500), lines=400, update_interval=50):
+def greedy_lineart_realtime(points, img_route, size=(500, 500), lines=400, update_interval=5):
     """
     Create a real-time line art visualization.
     
@@ -374,11 +373,10 @@ def visualize_final_lineart(solution, size=(500, 500)):
 if __name__ == "__main__":
     # Generate real-time line art (this will show the animation)
     solution = greedy_lineart_realtime(
-        points=300, 
+        points=200, 
         img_route="gauss_easy.png", 
-        size=(500, 500), 
+        size=(600, 600), 
         lines=2000,
-        update_interval=10  # Update every 10ms for smooth animation
     )
     
     # Optionally show the final result in a separate window

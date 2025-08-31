@@ -58,7 +58,6 @@ def circle_crop_grayscale(image_path, size=(500, 500), return_image=False, show=
         return arr, img
     return arr
 
-
 def get_circunference_points(arr, num_points=250):
     """
     Get pixel coordinates + values along a circular perimeter.
@@ -133,7 +132,6 @@ def score(array, source, destination, canvas):
     
     darkness_score = 0      # How much darkness this line covers
     overlap_penalty = 0     # How much it overlaps existing lines
-    canvas_benefit = 0      # Reward for connecting to existing lines
     valid_pixels = 0        # Count of valid pixels on this line
     
     for point in linePoints:
@@ -164,13 +162,12 @@ def score(array, source, destination, canvas):
         return -1000  # Very bad score for invalid lines
     
     # Final score with multiple components
-    base_score = darkness_score - overlap_penalty*0.15
+    base_score = darkness_score - overlap_penalty*0.10
     
     # Normalize by line length and add connectivity
     final_score = (base_score / valid_pixels)
     
     return final_score
-
 
 def updateCanvas(source, destination, canvas):
     """
