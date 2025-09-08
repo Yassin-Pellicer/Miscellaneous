@@ -1,3 +1,4 @@
+import argparse
 import math
 from PIL import Image, ImageOps, ImageDraw, ImageEnhance
 import numpy as np
@@ -166,7 +167,7 @@ def score(array, source, destination, canvas):
         return -1000  # Very bad score for invalid lines
     
     # Final score with multiple components
-    base_score = darkness_score - overlap_penalty*0.15
+    base_score = darkness_score - overlap_penalty*0.05
     
     # Normalize by line length and add connectivity
     final_score = (base_score / valid_pixels)
@@ -347,37 +348,14 @@ def greedy_lineart_realtime(points, img_route, size=(500, 500), lines=400, updat
     generator = RealTimeLineArt(points, img_route, size, lines, update_interval)
     return generator.start_animation()
 
-
-def visualize_final_lineart(solution, size=(500, 500)):
-    """
-    Visualizes the completed line art.
-    """
-    plt.figure(figsize=(10, 10))
-    plt.xlim(0, size[0])
-    plt.ylim(0, size[1])
-    plt.gca().invert_yaxis()
-    plt.axis('off')
-    plt.title('Final Line Art')
-
-    # Draw each line
-    for i in range(len(solution)-1):
-        x0, y0 = solution[i]
-        x1, y1 = solution[i+1]
-        plt.plot([x0, x1], [y0, y1], color='black', linewidth=0.5, alpha=0.8)
-    
-    plt.tight_layout()
-    plt.show()
-
-
-# Example usage:
 if __name__ == "__main__":
-    # Generate real-time line art (this will show the animation)
-    solution = greedy_lineart_realtime(
-        points=250, 
-        img_route="mum3.png", 
-        size=(500, 500), 
-        lines=1500,
-    )
-    
-    # Optionally show the final result in a separate window
-    # visualize_final_lineart(solution)
+    parser = argparse.ArgumentParser(description="Generate greedy line art from an image.")
+
+    parser.add_argument("image_path", type=str, help="Path to the input image.")
+    parser.add_argument("--points", type=int, default=250, help="Number of circumference points (default: 250).")
+    parser.add_argument("--size", type=int, nargs=2, default=[500, 500], help="Output size as width height (default: 500 500).")
+    parser.add_argument("--lines", type=int, default=2000, help="Number of lines to draw (default: 2000).")
+
+    args = parser.parse_args()
+
+    solution = greedy_lineart_realtime(args.points, args.image_path, size=tuple(args.size), lines=args.lines)

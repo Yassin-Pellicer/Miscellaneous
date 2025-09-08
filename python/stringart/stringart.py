@@ -2,6 +2,7 @@ import math
 from PIL import Image, ImageDraw, ImageEnhance
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 
 def circle_crop_grayscale(image_path, size=(500, 500), return_image=False, show=False, contrast=3.0):
     """
@@ -162,7 +163,7 @@ def score(array, source, destination, canvas):
         return -1000  # Very bad score for invalid lines
     
     # Final score with multiple components
-    base_score = darkness_score - overlap_penalty*0.10
+    base_score = darkness_score - overlap_penalty*0.025
     
     # Normalize by line length and add connectivity
     final_score = (base_score / valid_pixels)
@@ -187,7 +188,7 @@ def updateCanvas(source, destination, canvas):
     for point in linePoints:
         x, y = point[0], point[1]
         if 0 <= y < canvas.shape[0] and 0 <= x < canvas.shape[1]:
-            canvas[y, x] = min(1.0, canvas[y, x] + 0.5)  # Line pixels get 0.5
+            canvas[y, x] = canvas[y, x] + 0.5  # Line pixels get 0.5
     
     # Second pass: mark surrounding pixels
     for point in linePoints:
@@ -201,37 +202,43 @@ def updateCanvas(source, destination, canvas):
                     
                 nx, ny = x + dx, y + dy
                 if 0 <= ny < canvas.shape[0] and 0 <= nx < canvas.shape[1]:
-                    # Only add influence if not already heavily marked
-                    if canvas[ny, nx] < 0.7:
-                        canvas[ny, nx] = min(1.0, canvas[ny, nx] + 0.4)  # Surrounding pixels get 0.2
+                    canvas[ny, nx] = canvas[ny, nx] + 0.2
     
     return canvas
 
-def visualize_lineart(solution, size=(500, 500)):
-    for i in solution:
-        print(i)
+def visualize_final_lineart(solution, size=(500, 500), img=None):
     """
-    Visualizes the line art using matplotlib.
+    Visualizes the completed line art over the scaled image.
 
-    Parameters
-    ----------
-    solution : list of tuples
-        List of (x, y) coordinates from greedy_lineart.
-    size : tuple, optional
-        Size of the canvas. Defaults to (500, 500).
+    Args:
+        solution: List of (x, y) coordinates
+        size: Tuple (width, height)
+        img: Optional PIL image (already resized & masked) for background
     """
-    plt.figure(figsize=(8, 8))
-    plt.xlim(0, size[0])
-    plt.ylim(0, size[1])
-    plt.gca().invert_yaxis()  # Because image coordinates have y=0 at top
+    plt.figure(figsize=(10, 10))
+
+    # Show background image if provided
+    if img is not None:
+        arr = np.array(img)  # keep RGBA
+        plt.imshow(arr, extent=[0, size[0], size[1], 0])  
+    else:
+        plt.gca().set_facecolor("white")
+
+    # Ensure axes match image space and zoom out for better visualization
+    plt.xlim(0, size[0] * 1.1)
+    plt.ylim(size[1] * 1.1, 0)  # invert y-axis naturally with extent
     plt.axis('off')
+    plt.title('Final Line Art')
 
     # Draw each line
     for i in range(len(solution)-1):
         x0, y0 = solution[i]
         x1, y1 = solution[i+1]
-        plt.plot([x0, x1], [y0, y1], color='black', linewidth=0.5, alpha=0.5)
+        plt.plot([x0, x1], [y0, y1], color='black', linewidth=0.5, alpha=0.8)
+
+    plt.tight_layout()
     plt.show()
+
 
 def greedy_lineart(points, img_route, size=(500, 500), lines=400):
     """
@@ -258,9 +265,6 @@ def greedy_lineart(points, img_route, size=(500, 500), lines=400):
         lines = points * (points - 1) / 2
 
     arr, img = circle_crop_grayscale(img_route, size=size, return_image=True)
-    plt.imshow(img)
-    plt.axis('off')
-    plt.show()
     nodes = get_circunference_points(arr, num_points=points)
     canvas = np.full((size[1], size[0]), np.float32(0.0))
 
@@ -281,11 +285,22 @@ def greedy_lineart(points, img_route, size=(500, 500), lines=400):
         best_edge = max(edgeDict, key=edgeDict.get)
         canvas = updateCanvas(best_edge[0], best_edge[1], canvas)
 
-        print("nº",len(solution),"->", solution[-1]) 
+        print(f"nº {len(solution)} -> {solution[-1]}")
         solution.append((best_edge[1][0], best_edge[1][1]))
         done.add(frozenset(best_edge))
      
     return solution
 
-solution = greedy_lineart(250, "image.png", size=(500, 500), lines=2000)
-visualize_lineart(solution)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate greedy line art from an image.")
+
+    parser.add_argument("image_path", type=str, help="Path to the input image.")
+    parser.add_argument("--points", type=int, default=250, help="Number of circumference points (default: 250).")
+    parser.add_argument("--size", type=int, nargs=2, default=[500, 500], help="Output size as width height (default: 500 500).")
+    parser.add_argument("--lines", type=int, default=2000, help="Number of lines to draw (default: 2000).")
+
+    args = parser.parse_args()
+
+    solution = greedy_lineart(args.points, args.image_path, size=tuple(args.size), lines=args.lines)
+    visualize_final_lineart(solution)
