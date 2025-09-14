@@ -1,15 +1,18 @@
 import argparse
-import cv2
-import numpy as np
-import tensorflow as tf
-import pandas as pd
-from ultralytics import YOLO
+import cv2 # type: ignore
+import numpy as np # type: ignore
+import tensorflow as tf # type: ignore
+import pandas as pd # type: ignore
+from ultralytics import YOLO # type: ignore
 import threading
 import queue
 import os
 
-dataset = "/mnt/d/Datasets/spanish_traffic/Classification/samples"
-labelfile = pd.read_csv("/mnt/d/Datasets/spanish_traffic/Classification/gt_spanish_dataset.csv")
+import os
+os.environ["XLA_FLAGS"] = "--xla_gpu_cuda_data_dir=/usr/lib/cuda/"
+
+dataset = "/media/yassin/Nuevo vol/Datasets/spanish_traffic/Classification/samples"
+labelfile = pd.read_csv("/media/yassin/Nuevo vol/Datasets/spanish_traffic/Classification/gt_spanish_dataset.csv")
 
 classes = sorted(os.listdir(dataset))
 classDict = {}
@@ -93,7 +96,6 @@ def process_video(video_path, yolo, classifier):
 
     annotations = []
     frame_count = 0
-    process_every_n_frames = 1 
 
     while cap.isOpened():
         ret, frame = cap.read()
