@@ -1,120 +1,254 @@
 import cv2
 import mediapipe as mp
 import numpy as np
+import landmarks as lm
+import pickle
+import os
+import time
 
-CHIN_POINT = 254
+FRAME_COUNT = 0
+BUFFER = []
+RECORDING = False
+FIRST_TIME = True
 
-def representation(total_points_relative):
-    if total_points_relative is None:
+def capture_and_store_class(class_name, points_2d):
+    """Store captured points with frame number to pickle file"""
+    # Ensure points_2d is a Python list
+    points_list = points_2d.tolist() if isinstance(points_2d, np.ndarray) else points_2d
+    if not points_list:
         return
+
+    data_entry = {"class_name": class_name, "points": points_list}
+
+    filename = f"{class_name}.pickle"
+    if os.path.exists(filename):
+        with open(filename, "rb") as f:
+            dataset = pickle.load(f)
+    else:
+        dataset = []
+
+    dataset.append(data_entry)
+
+    with open(filename, "wb") as f:
+        pickle.dump(dataset, f)
+
+    print(f"Saved points under class '{class_name}' in {filename}")
+
+def representation(total_points):
+    """Process and display landmarks with recording functionality"""
+    global BUFFER, FRAME_COUNT, RECORDING, FIRST_TIME
     
-    # Convert to numpy array and ensure proper shape
-    total_points_relative = np.array(total_points_relative)
+    if not total_points:
+        return
+
+    total_points = np.array(total_points, dtype=np.float32)
+    total_points_relative = total_points
+
+    # Normalize points if we have face landmarks
+    if len(total_points) > max(lm.CHIN_POINT, lm.FOREHEAD_POINT):
+        total_points_relative = total_points - total_points[lm.CHIN_POINT]
+        chin = total_points[lm.CHIN_POINT]
+        forehead = total_points[lm.FOREHEAD_POINT]
+        dist = np.linalg.norm(forehead - chin)
+        TARGET_DIST = 150
+        if dist > 0:
+            total_points_relative *= (TARGET_DIST / dist)
+
+    # Ensure proper shape
+    if total_points_relative.ndim == 1 and len(total_points_relative) % 2 == 0:
+        total_points_relative = total_points_relative.reshape(-1, 2)
     
-    # Check if array is 1D and reshape if needed
-    if total_points_relative.ndim == 1:
-        # If it's 1D, we need to determine how to reshape it
-        # Assuming it's flattened (x1, y1, z1, x2, y2, z2, ...)
-        if len(total_points_relative) % 3 == 0:
-            total_points_relative = total_points_relative.reshape(-1, 3)
-        elif len(total_points_relative) % 2 == 0:
-            # If it's 2D points (x1, y1, x2, y2, ...)
-            total_points_relative = total_points_relative.reshape(-1, 2)
-        else:
-            print(f"Error: Cannot reshape array of length {len(total_points_relative)}")
-            return
-    
-    # Ensure we have at least 2D coordinates
     if total_points_relative.shape[1] < 2:
-        print(f"Error: Points array has shape {total_points_relative.shape}, need at least 2 columns")
+        print(f"Error: Points array has shape {total_points_relative.shape}")
         return
-    
-    scale = 500
-    offset = np.array([250, 250])
-    canvas = np.zeros((500, 500, 3), dtype=np.uint8)
-    
-    # Take x, y coordinates
-    points_2d = total_points_relative[:, :2]  
-    points_2d = points_2d * scale + offset    # scale and shift
-    
-    for pt in points_2d:
-        x, y = int(pt[0]), int(pt[1])
-        # Check bounds to avoid drawing outside canvas
-        if 0 <= x < 500 and 0 <= y < 500:
-            cv2.circle(canvas, (x, y), 3, (0, 255, 0), -1)  # draw green point
-    
-    cv2.imshow("Relative Landmarks", canvas)
-def open_camera():
-    mp_hands = mp.solutions.hands
-    hands = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5)
-    mp_face = mp.solutions.face_mesh
-    face_mesh = mp_face.FaceMesh(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-    mp_draw = mp.solutions.drawing_utils
+    OFFSET = np.array([350, 250])
+    points_2d = total_points_relative[:, :2] + OFFSET
 
-    cap = cv2.VideoCapture(0)
+    # Handle recording logic
+    if RECORDING:
+        FIRST_TIME = False
+        BUFFER.append(points_2d.copy())  # Store a copy
+        FRAME_COUNT += 1
+    else:
+        # Save data when recording stops (only once)
+        if not FIRST_TIME and len(BUFFER) > 0:
+            BUFFER = []
 
-    while True:
+def process_landmarks(frame, results_hand, results_face):
+    total_points = []
+    
+    # Process face landmarks
+    if results_face.multi_face_landmarks:
+        for face_landmarks in results_face.multi_face_landmarks:
+            for idx in lm.ALL:
+                if idx < len(face_landmarks.landmark):
+                    lm_point = face_landmarks.landmark[idx]
+                    h, w, _ = frame.shape
+                    cx, cy = int(lm_point.x * w), int(lm_point.y * h)
+                    cv2.circle(frame, (cx, cy), 2, (0, 255, 0), -1)
+                    total_points.append((cx, cy))
+    
+    # Process hand landmarks
+    text = "Nothing"
+    if results_hand.multi_hand_landmarks:
+        text = "Hand detected"
+        mp_draw = mp.solutions.drawing_utils
+        mp_hands = mp.solutions.hands
+        for hand_landmarks in results_hand.multi_hand_landmarks:
+            mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+            h, w, _ = frame.shape
+            total_points.extend([(int(lm.x * w), int(lm.y * h)) for lm in hand_landmarks.landmark])
+    
+    return total_points, text
+
+def record_sequence(cap, hands, face_mesh, duration=2, num_captures=20):
+    """Record a fixed number of frames evenly across the duration"""
+    global RECORDING, FRAME_COUNT, BUFFER
+
+    BUFFER = []
+    FRAME_COUNT = 0
+
+    print("Get ready! Recording will start in 3 seconds...")
+    countdown_start = time.time()
+    countdown_duration = 3
+
+    # Countdown
+    while time.time() - countdown_start < countdown_duration:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frame = cv2.flip(frame, 1)
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results_hand = hands.process(rgb_frame)
+        results_face = face_mesh.process(rgb_frame)
+        total_points, text = process_landmarks(frame, results_hand, results_face)
+
+        # Display countdown
+        remaining = countdown_duration - (time.time() - countdown_start)
+        cv2.putText(frame, f"GET READY! {int(remaining)+1}", (50, 200),
+                    cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 3)
+        cv2.imshow("Hand Detection", frame)
+        if cv2.waitKey(1) & 0xFF in [27, ord('q')]:
+            return
+
+    # Recording phase
+    RECORDING = True
+    print(f"Recording now for {duration} seconds... capturing {num_captures} frames")
+    start_time = time.time()
+
+    # Calculate exact timestamps for each capture
+    capture_times = np.linspace(0, duration, num_captures)
+
+    capture_idx = 0
+    while capture_idx < num_captures:
         ret, frame = cap.read()
         if not ret:
             break
 
         frame = cv2.flip(frame, 1)
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
         results_hand = hands.process(rgb_frame)
         results_face = face_mesh.process(rgb_frame)
+        total_points, text = process_landmarks(frame, results_hand, results_face)
 
-        if results_face.multi_face_landmarks:
-            for face_landmarks in results_face.multi_face_landmarks:
-                mp_draw.draw_landmarks(frame, face_landmarks, mp_face.FACEMESH_CONTOURS)
+        elapsed = time.time() - start_time
+        if elapsed >= capture_times[capture_idx]:
+            BUFFER.append(total_points.copy())
+            FRAME_COUNT += 1
+            print(f"Captured frame {FRAME_COUNT}/{num_captures}")
+            capture_idx += 1
 
-        if results_hand.multi_hand_landmarks:
-            text = "Hand detected"
-            for hand_landmarks in results_hand.multi_hand_landmarks:
-                mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-        else:
-            text = "Nothing"
+        # Recording indicator
+        remaining_time = max(0, duration - elapsed)
+        cv2.putText(frame, f"RECORDING... {remaining_time:.1f}s left", (10, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        cv2.imshow("Hand Detection", frame)
 
-        total_points = []
-
-        # Suppose CHIN_POINT is the index of the chin in the face landmarks
-        CHIN_POINT = 152  # example index in MediaPipe face mesh
-
-        total_points = []
-
-        if results_face.multi_face_landmarks:
-            for face_landmarks in results_face.multi_face_landmarks:
-                face_points = [(lm.x, lm.y, lm.z) for lm in face_landmarks.landmark]
-                total_points.extend(face_points)
-
-        if results_hand.multi_hand_landmarks:
-            for hand_landmarks in results_hand.multi_hand_landmarks:
-                hand_points = [(lm.x, lm.y, lm.z) for lm in hand_landmarks.landmark]
-                total_points.extend(hand_points)
-
-        # Convert to NumPy array for easier math
-        total_points = np.array(total_points, dtype=np.float32)
-
-        if len(total_points) > CHIN_POINT:
-            total_points_relative = total_points - total_points[CHIN_POINT]
-        else:
-            total_points_relative = total_points  # fallback
-
-        # Scale factor for visualization
-        representation(total_points_relative)
-
-        cv2.putText(frame, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,
-          1, (0, 255, 0) if text == "Hand detected" else (0, 0, 255), 2)
-
-        cv2.imshow('Hand Detection', frame)
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q') or key == 27 or cv2.getWindowProperty('Hand Detection', cv2.WND_PROP_VISIBLE) == 0:
+        if cv2.waitKey(1) & 0xFF in [27, ord('q')]:
             break
 
-    cap.release()
-    cv2.destroyAllWindows()
+    for i, frame_points in enumerate(BUFFER):
+        capture_and_store_class("afternoon", frame_points)
+
+    RECORDING = False
+    print("Recording finished!")
+
+def open_camera():
+    global RECORDING, FRAME_COUNT, BUFFER, FIRST_TIME
+
+    mp_hands = mp.solutions.hands
+    hands = mp_hands.Hands(min_detection_confidence=0.4, min_tracking_confidence=0.4)
+    mp_face = mp.solutions.face_mesh
+    face_mesh = mp_face.FaceMesh(min_detection_confidence=0.4, min_tracking_confidence=0.4)
+
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Error: Could not open camera")
+        return
+
+    cv2.namedWindow('Hand Detection', cv2.WINDOW_AUTOSIZE)
+
+    print("Controls:")
+    print("- Press 'c' to start recording")
+    print("- Press 'q' or ESC to exit")
+    print("- Close any window to exit")
+
+    try:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                print("Error: Failed to capture frame")
+                break
+
+            frame = cv2.flip(frame, 1)
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            results_hand = hands.process(rgb_frame)
+            results_face = face_mesh.process(rgb_frame)
+
+            total_points, text = process_landmarks(frame, results_hand, results_face)
+
+            # Display info on main frame
+            status_color = (0, 255, 0) if text == "Hand detected" else (0, 0, 255)
+            cv2.putText(frame, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, status_color, 2)
+            
+            if not RECORDING:
+                cv2.putText(frame, "Press 'c' to record, 'q'/ESC to exit", (10, 70),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+
+            representation(total_points)
+            cv2.imshow('Hand Detection', frame)
+
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q') or key == 27:
+                print("Exiting...")
+                break
+
+            # Start recording when 'c' is pressed and not already recording
+            if key == ord('c') and not RECORDING:
+                record_sequence(cap, hands, face_mesh, duration=2)
+
+            # Check for window closure
+            try:
+                if cv2.getWindowProperty('Hand Detection', cv2.WND_PROP_VISIBLE) < 1:
+                    print("Exiting due to main window closure...")
+                    break
+            except cv2.error:
+                print("Window was destroyed, exiting...")
+                break
+
+    except KeyboardInterrupt:
+        print("Interrupted by user")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        print("Cleaning up...")
+        cap.release()
+        cv2.destroyAllWindows()
+        hands.close()
+        face_mesh.close()
+        print("Program ended successfully!")
 
 if __name__ == '__main__':
     open_camera()
