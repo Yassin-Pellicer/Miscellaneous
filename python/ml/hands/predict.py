@@ -9,9 +9,9 @@ import os
 model = load_model("gesture_recognition_cnn.h5")
 
 # Define class names (adjust to your dataset)
-CLASS_NAMES = ["afternoon", "good", "hello", "nosign"]
+CLASS_NAMES = sorted([name.split(".")[0] for name in os.listdir("pickles/")])
 
-def preprocess_points(points, target_points=213):
+def preprocess_points(points, target_points=234):
     """
     Convert landmarks to shape (1, target_points, 2) for CNN.
     Pads with zeros if less than target_points.
@@ -33,8 +33,10 @@ def predict_gesture(points):
     preds = model.predict(processed, verbose=0)
     class_id = np.argmax(preds)
     confidence = preds[0][class_id]
-    if confidence < 0.6:
-      return "nosign", confidence
+    if CLASS_NAMES[class_id] == "nosign":
+      return "", 0 
+    elif confidence < 0.6:
+      return "", 0
     return CLASS_NAMES[class_id], confidence
 
 def open_camera():

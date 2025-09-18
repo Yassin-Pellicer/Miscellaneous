@@ -169,7 +169,7 @@ def record_sequence(cap, hands, face_mesh, duration=2, num_captures=20):
             break
 
     for i, frame_points in enumerate(BUFFER):
-        capture_and_store_class("afternoon", frame_points)
+        capture_and_store_class("pickles/nombre", frame_points)
 
     RECORDING = False
     print("Recording finished!")
