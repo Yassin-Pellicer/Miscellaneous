@@ -15,7 +15,7 @@ class GestureInference:
         
         # Model parameters (from training)
         self.max_seq_len = 20
-        self.feature_dim = 426
+        self.feature_dim = 468
         
         # Sequence buffer for real-time prediction
         self.sequence_buffer = deque(maxlen=20)
@@ -110,10 +110,10 @@ class GestureInference:
 
     def smooth_prediction(self, prediction, confidence):
         """Smooth predictions over recent frames"""
-        if confidence > 0.5:  # Only consider confident predictions
+        if confidence > 0.2:  # Only consider confident predictions
             self.recent_predictions.append(prediction)
             
-            if len(self.recent_predictions) >= 3:
+            if len(self.recent_predictions) >= 1:
                 # Most common prediction in recent frames
                 from collections import Counter
                 most_common = Counter(self.recent_predictions).most_common(1)[0]
