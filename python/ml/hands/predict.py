@@ -85,7 +85,7 @@ class GestureInference:
 
     def predict_gesture(self):
         """Predict gesture from current sequence buffer"""
-        if len(self.sequence_buffer) < 20:
+        if len(self.sequence_buffer) < 10:
             return "Collecting...", 0.0
         
         # Prepare input data
@@ -170,7 +170,6 @@ class GestureInference:
                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
             
             cv2.imshow("Gesture Recognition", frame)
-            cv2.imshow("Landmarks", viz)
             
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break

@@ -19,6 +19,7 @@ def save_sequence(class_name, sequence):
     dataset.append({"class_name": class_name, "points": sequence})
     with open(filename, "wb") as f:
         pickle.dump(dataset, f)
+    print(sequence)
     print(f"Saved sequence ({len(sequence)} frames) to {filename}")
 
 def normalize_points(points):
@@ -65,12 +66,12 @@ def process_landmarks(frame, results_hand, results_face):
 
     return total_points
 
-def record_sequence(cap, hands, face_mesh, class_name="default", duration=2, num_frames=20):
+def record_sequence(cap, hands, face_mesh, class_name="default", duration=1, num_frames=20):
     """Record a sequence of frames and save to pickle"""
     sequence = []
 
     # Countdown (non-blocking, live video)
-    countdown_duration = 3
+    countdown_duration = 0
     countdown_start = time.time()
 
     while True:
@@ -187,7 +188,13 @@ def open_camera():
             if key in [27, ord('q')]:
                 break
             elif key == ord('c'):
-                record_sequence(cap, mp_hands, mp_face, class_name="pickles/hola")
+                i = 0
+                while i < (60*5):
+                    record_sequence(cap, mp_hands, mp_face, class_name="pickles/donde")
+                    print("iteration:", i)
+                    if key in [27, ord('q')]:
+                        break
+                    i += 1
 
     finally:
         cap.release()
