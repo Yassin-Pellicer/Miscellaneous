@@ -1,188 +1,321 @@
+import time
 import cv2
 import mediapipe as mp
 import numpy as np
 import pickle
-from collections import deque
 from tensorflow.keras.models import load_model # type: ignore
 import landmarks as lm
 
-class GestureInference:
-    def __init__(self, model_path="gesture_model.h5", label_encoder_path="label_encoder.pkl"):
-        # Load trained model and label encoder
-        self.model = load_model(model_path)
-        with open(label_encoder_path, "rb") as f:
-            self.label_encoder = pickle.load(f)
+class ImprovedGestureRecognizer:
+    def __init__(self, model_path="gesture_model.keras", label_encoder_path="label_encoder.pkl"):
+        self.FEATURE_DIM = 468
+        self.SEQUENCE = 20
+        self.buffer = []
         
-        # Model parameters (from training)
-        self.max_seq_len = 20
-        self.feature_dim = 468
-        
-        # Sequence buffer for real-time prediction
-        self.sequence_buffer = deque(maxlen=20)
-        
-        # MediaPipe setup
-        self.mp_hands = mp.solutions.hands.Hands(
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5
-        )
-        self.mp_face = mp.solutions.face_mesh.FaceMesh(
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5
-        )
-        
-        # Prediction smoothing
-        self.recent_predictions = deque(maxlen=5)
-        self.current_prediction = "No Gesture"
-        self.confidence = 0.0
-        
-        print("Model loaded successfully!")
-        print(f"Classes: {list(self.label_encoder.classes_)}")
+        # Load model and label encoder
+        try:
+            self.model = load_model(model_path, compile=False)
+            print("Model loaded successfully!")
+            
+            # Pre-compile the model with a dummy prediction for faster inference
+            dummy_input = np.zeros((1, self.SEQUENCE, self.FEATURE_DIM), dtype=np.float32)
+            _ = self.model.predict(dummy_input, verbose=0)
+            print("Model warmed up!")
+            
+        except Exception as e:
+            print(f"Error loading model: {e}")
+            exit(1)
 
-    def normalize_points(self, points):
-        """Normalize points based on chin-forehead distance"""
-        if not points:
-            return np.array([])
-        
-        points = np.array(points, dtype=np.float32)
-        
-        # Scale face if chin + forehead available
-        if len(points) > max(lm.CHIN_POINT, lm.FOREHEAD_POINT):
-            chin, forehead = points[lm.CHIN_POINT], points[lm.FOREHEAD_POINT]
-            dist = np.linalg.norm(forehead - chin)
-            if dist > 0:
-                scale = 100.0 / dist
-                points = (points - chin) * scale
-        
-        OFFSET = np.array([250, 250])
-        return points + OFFSET
-
-    def extract_landmarks(self, frame, results_hand, results_face):
-        """Extract landmarks from face and hands"""
-        total_points = []
-        h, w, _ = frame.shape
-
-        # Face landmarks
-        if results_face.multi_face_landmarks:
-            for face_landmarks in results_face.multi_face_landmarks:
-                for idx in lm.ALL:
-                    if idx < len(face_landmarks.landmark):
-                        pt = face_landmarks.landmark[idx]
-                        cx, cy = int(pt.x * w), int(pt.y * h)
-                        cv2.circle(frame, (cx, cy), 2, (0, 255, 0), -1)
-                        total_points.append((cx, cy))
-
-        # Hand landmarks
-        if results_hand.multi_hand_landmarks:
-            for hand_landmarks in results_hand.multi_hand_landmarks:
-                mp.solutions.drawing_utils.draw_landmarks(
-                    frame, hand_landmarks, mp.solutions.hands.HAND_CONNECTIONS
-                )
-                total_points.extend([
-                    (int(l.x * w), int(l.y * h)) for l in hand_landmarks.landmark
-                ])
-
-        return total_points
+        try:
+            with open(label_encoder_path, "rb") as f:
+                self.label_encoder = pickle.load(f)
+            print("Label encoder loaded successfully!")
+        except Exception as e:
+            print(f"Error loading label encoder: {e}")
+            exit(1)
 
     def predict_gesture(self):
-        """Predict gesture from current sequence buffer"""
-        if len(self.sequence_buffer) < 10:
-            return "Collecting...", 0.0
+        if len(self.buffer) < self.SEQUENCE:
+            return "No gesture", 0.0
+            
+        # Use the last SEQUENCE frames for consistency
+        sequence = self.buffer[-self.SEQUENCE:]
         
-        # Prepare input data
-        sequence = list(self.sequence_buffer)
-        padded_sequence = np.zeros((self.max_seq_len, self.feature_dim), dtype=np.float32)
+        # Create properly shaped input matching training data format
+        padded_sequence = np.zeros((self.SEQUENCE, self.FEATURE_DIM), dtype=np.float32)
         
-        for i, frame in enumerate(sequence):
-            if i >= self.max_seq_len:
-                break
-            frame_flat = np.array(frame, dtype=np.float32).flatten()
-            padded_sequence[i, :len(frame_flat)] = frame_flat[:self.feature_dim]
+        for i, frame_points in enumerate(sequence):
+            if len(frame_points) > 0:
+                # Ensure we have the right format - frame_points should be (N, 2) coordinates
+                frame_points = np.array(frame_points, dtype=np.float32)
+                
+                # Flatten to 1D as expected by the model
+                frame_flat = frame_points.flatten()
+                
+                # Fill the padded sequence with proper bounds checking
+                copy_len = min(len(frame_flat), self.FEATURE_DIM)
+                padded_sequence[i, :copy_len] = frame_flat[:copy_len]
         
-        # Predict
-        input_data = padded_sequence.reshape(1, self.max_seq_len, self.feature_dim)
+        # Reshape for model input: (batch_size, sequence_length, features)
+        input_data = padded_sequence.reshape(1, self.SEQUENCE, self.FEATURE_DIM)
+        
+        # Make prediction
         predictions = self.model.predict(input_data, verbose=0)[0]
         
-        confidence = np.max(predictions)
-        predicted_idx = np.argmax(predictions)
+        confidence = float(np.max(predictions))
+        predicted_idx = int(np.argmax(predictions))
         predicted_class = self.label_encoder.inverse_transform([predicted_idx])[0]
         
         return predicted_class, confidence
 
-    def smooth_prediction(self, prediction, confidence):
-        """Smooth predictions over recent frames"""
-        if confidence > 0.2:  # Only consider confident predictions
-            self.recent_predictions.append(prediction)
+    def extract_landmarks_consistent(self, frame, results_hand, results_face):
+        """Extract landmarks with consistent ordering matching training data"""
+        total_points = []
+        h, w = frame.shape[:2]
+
+        # Face landmarks first - CONSISTENT ORDER IS CRUCIAL
+        face_points = []
+        if results_face.multi_face_landmarks:
+            face_landmarks = results_face.multi_face_landmarks[0]
+            for idx in lm.ALL:  # Make sure this matches your training order exactly
+                if idx < len(face_landmarks.landmark):
+                    pt = face_landmarks.landmark[idx]
+                    cx, cy = int(pt.x * w), int(pt.y * h)
+                    face_points.append((cx, cy))
+                    
+                    # Optional: visualize face landmarks
+                    cv2.circle(frame, (cx, cy), 1, (0, 255, 0), -1)
+        
+        # Hand landmarks second - MAINTAIN CONSISTENT ORDER
+        hand_points = []
+        if results_hand.multi_hand_landmarks:
+            # Sort hands by x-coordinate for consistency (left hand first)
+            hands_with_x = []
+            for hand_landmarks in results_hand.multi_hand_landmarks:
+                hand_x = np.mean([lm.x for lm in hand_landmarks.landmark])
+                hands_with_x.append((hand_x, hand_landmarks))
             
-            if len(self.recent_predictions) >= 1:
-                # Most common prediction in recent frames
-                from collections import Counter
-                most_common = Counter(self.recent_predictions).most_common(1)[0]
+            # Sort by x-coordinate (leftmost first)
+            hands_with_x.sort(key=lambda x: x[0])
+            
+            for _, hand_landmarks in hands_with_x:
+                # Draw hand landmarks for visualization
+                mp.solutions.drawing_utils.draw_landmarks(
+                    frame, hand_landmarks, mp.solutions.hands.HAND_CONNECTIONS
+                )
                 
-                if most_common[1] >= 2:  # At least 2 occurrences
-                    self.current_prediction = most_common[0]
-                    self.confidence = confidence
+                # Extract hand points in consistent order
+                for landmark in hand_landmarks.landmark:
+                    cx, cy = int(landmark.x * w), int(landmark.y * h)
+                    hand_points.append((cx, cy))
+
+        # Combine in the same order as training: face first, then hands
+        total_points = face_points + hand_points
+        return total_points
+
+    def normalize_points_proper(self, points):
+        """Proper normalization matching training data preprocessing"""
+        if not points or len(points) == 0:
+            return np.array([])
+        
+        points = np.array(points, dtype=np.float32)
+        
+        # Check if we have enough face landmarks for normalization
+        if len(points) > max(lm.CHIN_POINT, lm.FOREHEAD_POINT):
+            try:
+                chin = points[lm.CHIN_POINT]
+                forehead = points[lm.FOREHEAD_POINT]
+                
+                # Calculate face distance for scaling
+                face_dist = np.linalg.norm(forehead - chin)
+                
+                if face_dist > 0:
+                    # Scale based on face size (normalize to standard face size)
+                    scale = 100.0 / face_dist
+                    
+                    # Center on chin and scale
+                    normalized_points = (points - chin) * scale
+                    
+                    # Apply consistent offset (same as training)
+                    OFFSET = np.array([250, 250])
+                    normalized_points = normalized_points + OFFSET
+                    
+                    return normalized_points
+                    
+            except IndexError:
+                print("Warning: Face landmarks not complete for normalization")
+        
+        # Fallback: simple center normalization
+        if len(points) > 0:
+            centroid = np.mean(points, axis=0)
+            centered_points = points - centroid
+            # Add standard offset
+            return centered_points + np.array([250, 250])
+        
+        return points
 
     def run_inference(self):
-        """Run real-time inference"""
+        """Run inference with improved data quality"""
         cap = cv2.VideoCapture(0)
         
-        print("Starting gesture recognition...")
-        print("Press 'q' to quit")
+        # Set camera properties
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        cap.set(cv2.CAP_PROP_FPS, 30)
         
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                break
-                
-            frame = cv2.flip(frame, 1)
-            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            
-            # Process landmarks
-            results_hand = self.mp_hands.process(rgb)
-            results_face = self.mp_face.process(rgb)
-            total_points = self.extract_landmarks(frame, results_hand, results_face)
-            
-            # Add to buffer and predict
-            if total_points:
-                norm_points = self.normalize_points(total_points)
-                self.sequence_buffer.append(norm_points.tolist())
-                
-                prediction, confidence = self.predict_gesture()
-                self.smooth_prediction(prediction, confidence)
-            
-            # Display results
-            cv2.putText(frame, f"Gesture: {self.current_prediction}", 
-                       (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
-            cv2.putText(frame, f"Confidence: {self.confidence:.2f}", 
-                       (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-            cv2.putText(frame, f"Buffer: {len(self.sequence_buffer)}/20", 
-                       (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-            
-            # Show normalized visualization
-            viz = np.zeros((400, 400, 3), dtype=np.uint8)
-            if total_points:
-                norm_points = self.normalize_points(total_points)
-                for x, y in norm_points.astype(int):
-                    if 0 <= x < 400 and 0 <= y < 400:
-                        cv2.circle(viz, (x, y), 2, (0, 255, 255), -1)
-            
-            cv2.putText(viz, f"{self.current_prediction}", (10, 30), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-            
-            cv2.imshow("Gesture Recognition", frame)
-            
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+        # Initialize MediaPipe with settings that match training
+        mp_hands = mp.solutions.hands.Hands(
+            static_image_mode=False,
+            max_num_hands=2,  # Allow both hands like in training
+            min_detection_confidence=0.6,  # Lower threshold for better detection
+            min_tracking_confidence=0.6
+        )
+        mp_face = mp.solutions.face_mesh.FaceMesh(
+            static_image_mode=False,
+            max_num_faces=1,
+            refine_landmarks=True,  # Enable for better accuracy
+            min_detection_confidence=0.6,
+            min_tracking_confidence=0.6
+        )
         
-        cap.release()
-        cv2.destroyAllWindows()
+        print("Starting improved gesture recognition...")
+        print("Press 'q' to quit, 'r' to reset buffer")
+        
+        predicted_class = "No gesture"
+        confidence = 0.0
+        last_prediction_time = time.time()
+        prediction_interval = 0.8  # Slightly longer for better accuracy
+        
+        # Performance tracking
+        frame_count = 0
+        prediction_times = []
+        
+        # Buffer quality indicators
+        buffer_quality_scores = []
+        
+        try:
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    print("Failed to read frame from camera")
+                    break
+                    
+                frame = cv2.flip(frame, 1)
+                rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                
+                # Process landmarks
+                results_hand = mp_hands.process(rgb)
+                results_face = mp_face.process(rgb)
+
+                # Extract landmarks with consistent ordering
+                total_points = self.extract_landmarks_consistent(frame, results_hand, results_face)
+                
+                # Normalize points properly
+                norm_points = self.normalize_points_proper(total_points)
+                
+                # Quality check: only add good frames to buffer
+                frame_quality = self.assess_frame_quality(norm_points, results_hand, results_face)
+                buffer_quality_scores.append(frame_quality)
+                
+                # Only add high-quality frames to buffer
+                if frame_quality > 0.3:  # Quality threshold
+                    self.buffer.append(norm_points)
+                    # Keep buffer size reasonable
+                    if len(self.buffer) > self.SEQUENCE + 10:
+                        self.buffer = self.buffer[-self.SEQUENCE:]
+                
+                # Make predictions with sufficient high-quality data
+                current_time = time.time()
+                if (current_time - last_prediction_time >= prediction_interval and 
+                    len(self.buffer) >= self.SEQUENCE):
+                    
+                    # Check buffer quality
+                    recent_quality = np.mean(buffer_quality_scores[-self.SEQUENCE:]) if len(buffer_quality_scores) >= self.SEQUENCE else 0
+                    
+                    if recent_quality > 0.4:  # Only predict with good quality data
+                        pred_start = time.time()
+                        predicted_class, confidence = self.predict_gesture()
+                        pred_time = time.time() - pred_start
+                        prediction_times.append(pred_time)
+                        last_prediction_time = current_time
+                        
+                        print(f"Prediction: {predicted_class} (conf: {confidence:.3f}, quality: {recent_quality:.2f}, time: {pred_time*1000:.1f}ms)")
+                
+                # Display information
+                text = f"Gesture: {predicted_class} ({confidence:.3f})"
+                cv2.putText(frame, text, (10, 30),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                
+                # Show buffer status and quality
+                buffer_info = f"Buffer: {len(self.buffer)}/{self.SEQUENCE}, Quality: {frame_quality:.2f}"
+                cv2.putText(frame, buffer_info, (10, 60),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                
+                # Show detection status
+                hands_detected = "Hands: YES" if results_hand.multi_hand_landmarks else "Hands: NO"
+                face_detected = "Face: YES" if results_face.multi_face_landmarks else "Face: NO"
+                cv2.putText(frame, f"{hands_detected}, {face_detected}", (10, 90),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+
+                cv2.imshow("Improved Gesture Recognition", frame)
+                
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord('q'):
+                    break
+                elif key == ord('r'):
+                    self.buffer = []
+                    buffer_quality_scores = []
+                    print("Buffer reset!")
+                
+                frame_count += 1
+        
+        except KeyboardInterrupt:
+            print("Interrupted by user")
+        except Exception as e:
+            print(f"Error during inference: {e}")
+        finally:
+            # Performance stats
+            if prediction_times:
+                avg_pred_time = np.mean(prediction_times) * 1000
+                print(f"Average prediction time: {avg_pred_time:.1f}ms")
+            
+            # Cleanup
+            cap.release()
+            cv2.destroyAllWindows()
+            mp_hands.close()
+            mp_face.close()
+            print("Cleanup completed")
+
+    def assess_frame_quality(self, norm_points, results_hand, results_face):
+        """Assess the quality of the current frame for gesture recognition"""
+        quality_score = 0.0
+        
+        # Check if we have landmarks
+        if len(norm_points) == 0:
+            return 0.0
+        
+        # Face detection quality
+        if results_face.multi_face_landmarks:
+            quality_score += 0.3
+            
+        # Hand detection quality
+        if results_hand.multi_hand_landmarks:
+            num_hands = len(results_hand.multi_hand_landmarks)
+            quality_score += min(num_hands * 0.35, 0.7)  # Max 0.7 for hands
+        
+        # Landmark completeness
+        expected_landmarks = len(lm.ALL) + 21 * 2  # Face + both hands
+        actual_landmarks = len(norm_points)
+        completeness = min(actual_landmarks / expected_landmarks, 1.0)
+        quality_score *= completeness
+        
+        return min(quality_score, 1.0)
+
+
+def main():
+    recognizer = ImprovedGestureRecognizer()
+    recognizer.run_inference()
+
 
 if __name__ == "__main__":
-    try:
-        inference = GestureInference()
-        inference.run_inference()
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
-        print("Make sure you have 'gesture_model.h5' and 'label_encoder.pkl' files")
-    except Exception as e:
-        print(f"Error: {e}")
+    main()
