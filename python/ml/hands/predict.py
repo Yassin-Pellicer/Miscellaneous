@@ -65,6 +65,8 @@ class ImprovedGestureRecognizer:
         confidence = float(np.max(predictions))
         predicted_idx = int(np.argmax(predictions))
         predicted_class = self.label_encoder.inverse_transform([predicted_idx])[0]
+
+        self.buffer = []
         
         return predicted_class, confidence
 
@@ -221,7 +223,7 @@ class ImprovedGestureRecognizer:
                 if frame_quality > 0.3:  # Quality threshold
                     self.buffer.append(norm_points)
                     # Keep buffer size reasonable
-                    if len(self.buffer) > self.SEQUENCE + 10:
+                    if len(self.buffer) > self.SEQUENCE:
                         self.buffer = self.buffer[-self.SEQUENCE:]
                 
                 # Make predictions with sufficient high-quality data
@@ -241,6 +243,8 @@ class ImprovedGestureRecognizer:
                         
                         print(f"Prediction: {predicted_class} (conf: {confidence:.3f}, quality: {recent_quality:.2f}, time: {pred_time*1000:.1f}ms)")
                 
+                if not results_hand.multi_hand_landmarks: self.buffer = []; predicted_class, confidence = self.predict_gesture()
+                
                 # Display information
                 text = f"Gesture: {predicted_class} ({confidence:.3f})"
                 cv2.putText(frame, text, (10, 30),
@@ -254,6 +258,7 @@ class ImprovedGestureRecognizer:
                 # Show detection status
                 hands_detected = "Hands: YES" if results_hand.multi_hand_landmarks else "Hands: NO"
                 face_detected = "Face: YES" if results_face.multi_face_landmarks else "Face: NO"
+
                 cv2.putText(frame, f"{hands_detected}, {face_detected}", (10, 90),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 

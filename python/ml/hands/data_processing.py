@@ -4,10 +4,9 @@ import numpy as np
 import pickle
 import os
 import time
-import landmarks as lm   # your custom landmarks file
+import landmarks as lm # Custom Landmarks File
 
 def save_sequence(class_name, sequence):
-    """Save recorded sequence to pickle"""
     if not sequence:
         return
     filename = f"{class_name}.pickle"
@@ -19,16 +18,13 @@ def save_sequence(class_name, sequence):
     dataset.append({"class_name": class_name, "points": sequence})
     with open(filename, "wb") as f:
         pickle.dump(dataset, f)
-    print(sequence)
-    print(f"Saved sequence ({len(sequence)} frames) to {filename}")
 
 def normalize_points(points):
-    """Normalize points based on chin-forehead distance if available"""
     if not points:
         return np.array([])
     points = np.array(points, dtype=np.float32)
 
-    # scale face if chin + forehead available
+    # NORMALIZATION BASED ON FOREHEAD-CHIN points
     if len(points) > max(lm.CHIN_POINT, lm.FOREHEAD_POINT):
         chin, forehead = points[lm.CHIN_POINT], points[lm.FOREHEAD_POINT]
         dist = np.linalg.norm(forehead - chin)
@@ -36,11 +32,10 @@ def normalize_points(points):
             scale = 100.0 / dist
             points = (points - chin) * scale
 
-    OFFSET = np.array([250, 250])  # shift for display
+    OFFSET = np.array([250, 250])
     return points + OFFSET
 
 def process_landmarks(frame, results_hand, results_face):
-    """Extract 2D landmark coordinates for face + both hands"""
     total_points = []
     h, w, _ = frame.shape
 
@@ -93,7 +88,7 @@ def record_sequence(cap, hands, face_mesh, class_name="default", duration=1, num
             cv2.putText(frame, f"GET READY {int(remaining)+1}", (50, 200),
                         cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 3)
         else:
-            break  # countdown finished
+            break
 
         # Show normalized points
         norm_canvas = np.zeros((500, 500, 3), dtype=np.uint8)
@@ -190,7 +185,7 @@ def open_camera():
             elif key == ord('c'):
                 i = 0
                 while i < (60*5):
-                    record_sequence(cap, mp_hands, mp_face, class_name="pickles/donde")
+                    record_sequence(cap, mp_hands, mp_face, class_name="pickles/casa")
                     print("iteration:", i)
                     if key in [27, ord('q')]:
                         break
