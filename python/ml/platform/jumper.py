@@ -98,6 +98,11 @@ class Jumper:
             self.velocity_y = 0.0
             self.velocity_x = 0.0
             self.can_load_jump = True
+
+            if not platform.stepped_on:
+                self.score += 1
+                platform.stepped_on = True
+
             return True
 
         # Bottom collision

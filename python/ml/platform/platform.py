@@ -19,7 +19,8 @@ class Platform:
         self.floor_advance_distance = 0.0
         self.floor_advance_moved = 0.0
         self.floor_advance_direction = 1.0
-        self.stop_floor_advance_after_update = False
+
+        self.stepped_on = False
 
         self.randomize_width()
 

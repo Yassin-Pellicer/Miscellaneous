@@ -10,6 +10,9 @@ class GameConfig:
     platform_max_separation_variance: int = 150
     platform_min_separation_variance: int = 50
 
+    sky_color: tuple[int, int, int] = (139, 214, 247)
+    text_color: tuple[int, int, int] = (29, 29, 29)
+
     floor_height: int = 110
 
 class JumperConfig:
@@ -26,17 +29,17 @@ class JumperConfig:
 
 class PlatformConfig:
     width: int = 200
-    height: int = 90
+    height: int = 20
 
     variant_width: int = 100
     variant_min_length_until_reverse: int = 50
     variant_max_length_until_reverse: int = 200
     variant_speed_x: int = 100
 
-    x: float = GameConfig.width / 2 - width / 2
-    y: float = GameConfig.height - height / 2
+    x: float = GameConfig.width 
+    y: float = GameConfig.height
 
-    speed_y = 0.0
+    speed_y = 10.0
     speed_x = 0.0
 
     acceleration: float = 600
