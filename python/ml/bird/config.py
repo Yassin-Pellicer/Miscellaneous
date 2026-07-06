@@ -6,7 +6,7 @@ class GameConfig:
     floor_height: int = 110
     spawn_y: float = 300.0
     fps: int = 165
-    speed: float = 1.5
+    speed: float = 3.5
 
     sky_color: tuple[int, int, int] = (139, 214, 247)
     floor_color: tuple[int, int, int] = (222, 216, 149)
