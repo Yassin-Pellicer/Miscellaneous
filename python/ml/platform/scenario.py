@@ -101,11 +101,15 @@ class Scenario:
     def displace_world(self, dt: float) -> None:
         if self.displacement >= GameConfig.platform_separation:
             return
-        self.displacement += dt * GameConfig.displacement_velocity
+        displacement = min(
+            dt * GameConfig.displacement_velocity,
+            GameConfig.platform_separation - self.displacement,
+        )
+        self.displacement += displacement
         for platform in self.platforms:
-            platform.y += dt * GameConfig.displacement_velocity
+            platform.y += displacement
         for jumper in self.jumpers:
-            jumper.y += dt * GameConfig.displacement_velocity
+            jumper.y += displacement
         
     def _spawn_platforms(self, platform: Platform) -> None:
         next_y = platform.y - GameConfig.platform_separation

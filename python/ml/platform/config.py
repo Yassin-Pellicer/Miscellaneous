@@ -4,11 +4,11 @@ class GameConfig:
     width: int = 880
     height: int = 720
     fps: int = 165
-    speed: float = 10
+    speed: float = 1
 
     platform_separation: int = 200
     margins: int = 300
-    displacement_velocity: float = 1200.0
+    displacement_velocity: float = 600.0
 
     sky_color: tuple[int, int, int] = (139, 214, 247)
     text_color: tuple[int, int, int] = (29, 29, 29)
@@ -22,7 +22,10 @@ class JumperConfig:
     y: float = GameConfig.height - height / 2
 
     charge_coefficient = 0.01
-    speed_x = 600.0
+    speed_x = 100.0
+    acceleration_x: float = 2400.0
+    friction_x: float = 1800.0
+    max_speed_x: float = 1200.0
     jump_strength: float = -1200.0
     gravity: float = 2400.0
     max_fall_speed: float = 3000.0

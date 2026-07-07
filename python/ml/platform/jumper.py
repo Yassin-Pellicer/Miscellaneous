@@ -10,6 +10,7 @@ class Jumper:
 
         self.x: float = x - self.width / 2 if x is not None else JumperConfig.x
         self.y: float = y - self.height / 2 if y is not None else JumperConfig.y
+        self.acceleration_x = 0.0
         self.velocity_x = 0.0
         self.velocity_y = 0.0
 
@@ -28,15 +29,15 @@ class Jumper:
 
     def hold_left(self) -> None:
         if self.alive:
-            self.velocity_x = -JumperConfig.speed_x
+            self.acceleration_x = -JumperConfig.acceleration_x
 
     def hold_right(self) -> None:
         if self.alive:
-            self.velocity_x = JumperConfig.speed_x
+            self.acceleration_x = JumperConfig.acceleration_x
 
     def release_horizontal(self) -> None:
         if self.alive:
-            self.velocity_x = 0.0
+            self.acceleration_x = 0.0
 
     def update(self, dt: float) -> None:
         if not self.alive:
@@ -44,6 +45,21 @@ class Jumper:
 
         self.velocity_y += JumperConfig.gravity * dt
         self.velocity_y = min(self.velocity_y, JumperConfig.max_fall_speed)
+
+        self.velocity_x += self.acceleration_x * dt
+        self.velocity_x = max(
+            -JumperConfig.max_speed_x,
+            min(JumperConfig.max_speed_x, self.velocity_x),
+        )
+
+        if self.acceleration_x == 0.0:
+            friction = JumperConfig.friction_x * dt
+            if abs(self.velocity_x) <= friction:
+                self.velocity_x = 0.0
+            elif self.velocity_x > 0:
+                self.velocity_x -= friction
+            else:
+                self.velocity_x += friction
     
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt
