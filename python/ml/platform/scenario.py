@@ -1,3 +1,4 @@
+import math
 import random
 
 from jumper import Jumper
@@ -11,10 +12,21 @@ class Scenario:
         self.platforms: list[Platform] = []
         self.platform_timer = 0.0
         self.spawned_platform_count = 0
+        self.displacement = math.inf
 
     def reset(self, jumper_count: int = 1) -> None:
         self.generation += 1
         self.platform_timer = 0.0
+        self.platforms = []
+        self.spawned_platform_count = 0
+
+        initial_x = GameConfig.width / 2
+        initial_y = GameConfig.height - GameConfig.floor - PlatformConfig.height / 2
+        for index in range(4):
+            self._create_platform(
+                x=initial_x,
+                y=initial_y - index * GameConfig.platform_separation,
+            )
 
         self.jumpers = [
             Jumper(
@@ -24,15 +36,11 @@ class Scenario:
             )
             for i in range(jumper_count)
         ]
-
-        self.platforms = [
-            Platform(
-                platform_id=0,
-                x=PlatformConfig.x,
-                y=PlatformConfig.y,
-            )
-        ]
-        self.spawned_platform_count = len(self.platforms)
+        initial_platform = self.platforms[0]
+        initial_platform.x = (GameConfig.width - initial_platform.width) / 2
+        for jumper in self.jumpers:
+            jumper.x = initial_platform.x + initial_platform.width / 2
+            jumper.y = initial_platform.y - initial_platform.height / 2 - jumper.height / 2
 
     def update(self, dt: float, actions: dict[int, str] | None = None):
         default = "release"
@@ -40,98 +48,68 @@ class Scenario:
             actions = {}
         
         for jumper in self.jumpers:
-            if actions.get(jumper.jumper_id, default) == "charge":
-                jumper.hold_jump()
-            if actions.get(jumper.jumper_id, default) == "charge_left":
+            if actions.get(jumper.jumper_id, default) == "left":
                 jumper.hold_left()
-            if actions.get(jumper.jumper_id, default) == "charge_right":
+            if actions.get(jumper.jumper_id, default) == "right":
                 jumper.hold_right()
-            if actions.get(jumper.jumper_id, default) == "release":
-                jumper.release_jump()
             jumper.update(dt)
             
-        self._spawn_platforms(dt)
         self._remove_old_platforms()
-        self._check_collisions()
+        self._check_collisions(dt)
         self._update_scores()
-        self.bring_platforms_down(dt)
-
-    def bring_platforms_down(self, dt: float):
-        for platform in self.platforms:
-            platform.y += PlatformConfig.speed_y * dt
+        self.displace_world(dt)
         
-    
-    def _spawn_platforms(self, dt: float) -> None:
-        self.platform_timer += dt
-        if self.platform_timer >= GameConfig.platform_separation / GameConfig.speed:
-            self.platform_timer = 0.0
-            new_platform = Platform(
-                platform_id=self.spawned_platform_count,
-                x=0,
-                y=PlatformConfig.y,
-            )
-            previous_platform = self.platforms[-1] if self.platforms else None
-            new_platform.x = self._generate_platform_x(new_platform, previous_platform)
-            if random.random() < 1 / 7:
-                new_platform.randomize_speed_x()
-                new_platform.randomize_length_until_reverse()
-            self.platforms.append(new_platform)
-            self.spawned_platform_count += 1
+    def _create_platform(self, x: float, y: float) -> Platform:
+        new_platform = Platform(
+            platform_id=self.spawned_platform_count,
+            x=0,
+            y=PlatformConfig.y,
+        )
+        new_platform.x = random.uniform(GameConfig.margins/2, GameConfig.width - GameConfig.margins)
+        new_platform.y = y
+        self.platforms.append(new_platform)
+        self.spawned_platform_count += 1
+        return new_platform
 
-    def _generate_platform_x(self, new_platform: Platform, previous_platform: Platform | None) -> float:
-        max_x = max(0, GameConfig.width - new_platform.width)
-        if previous_platform is None:
-            return random.uniform(0, max_x)
-
-        min_gap = PlatformConfig.width / 2
-        valid_ranges: list[tuple[float, float]] = []
-
-        left_max_x = previous_platform.x - min_gap
-        if left_max_x >= 0:
-            valid_ranges.append((0, min(max_x, left_max_x)))
-
-        right_min_x = previous_platform.x + min_gap
-        if right_min_x <= max_x:
-            valid_ranges.append((max(0, right_min_x), max_x))
-
-        if not valid_ranges and previous_platform.x < min_gap:
-            new_platform.width = min(
-                new_platform.width,
-                int(GameConfig.width - previous_platform.x - min_gap)
-            )
-            max_x = max(0, GameConfig.width - new_platform.width)
-            if right_min_x <= max_x:
-                valid_ranges.append((max(0, right_min_x), max_x))
-
-        if not valid_ranges:
-            left_edge_x = 0
-            right_edge_x = max_x
-            if abs(left_edge_x - previous_platform.x) >= abs(right_edge_x - previous_platform.x):
-                return left_edge_x
-            return right_edge_x
-
-        range_start, range_end = random.choice(valid_ranges)
-        return random.uniform(range_start, range_end)
+    def displace_world(self, dt: float) -> None:
+        if self.displacement > GameConfig.platform_separation:
+            return
+        self.displacement += dt * GameConfig.displacement_velocity
+        for platform in self.platforms:
+            platform.y += dt * GameConfig.displacement_velocity
+        for jumper in self.jumpers:
+            jumper.y += dt * GameConfig.displacement_velocity
+        
+    def _spawn_platforms(self, platform: Platform) -> None:
+        next_y = platform.y - GameConfig.platform_separation
+        for existing_platform in self.platforms:
+            if abs(existing_platform.y - next_y) < 1e-6:
+                return
+        self._create_platform(x=platform.x, y=next_y)
     
     def _remove_old_platforms(self) -> None:
         self.platforms = [
             platform for platform in self.platforms
-            if platform.y + platform.width / 2 >= 0
+            if platform.y - platform.height / 2 <= GameConfig.height
         ]
     
-    def _check_collisions(self) -> None:
+    def _check_collisions(self, dt: float) -> None:
         for jumper in self.jumpers:
             if not jumper.alive:
                 continue
             for platform in self.platforms:
+                previous_score = jumper.score
                 if jumper.check_collision(platform):
+                    if jumper.score > previous_score:
+                        self._spawn_platforms(platform)
+                        if jumper.score > 1: self.displacement = 0 
                     break
 
     def _update_scores(self) -> None:
         for jumper in self.jumpers:
             if not jumper.alive:
                 continue
-            jumper.score = self.spawned_platform_count
+            jumper.fitness = jumper.score
     
     def _next_platform_for_jumper(self, jumper: Jumper) -> Platform | None:
         for platform in self.platforms:

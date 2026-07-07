@@ -46,8 +46,8 @@ class Renderer:
     def _draw_platforms(self, scenario) -> None:
         for platform in scenario.platforms:
             rect = pygame.Rect(
-                int(platform.x - platform.width / 2),
-                int(platform.y - platform.height / 2),
+                int(platform.x),
+                int(platform.y),
                 int(platform.width),
                 int(platform.height),
             )

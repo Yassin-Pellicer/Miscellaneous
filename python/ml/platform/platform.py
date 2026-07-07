@@ -30,18 +30,6 @@ class Platform:
             PlatformConfig.variant_width
         )
 
-    def randomize_speed_x(self) -> None:
-        self.velocity_x = PlatformConfig.speed_x + random.uniform(
-            -PlatformConfig.variant_speed_x, 
-            PlatformConfig.variant_speed_x
-        )
-
-    def randomize_length_until_reverse(self) -> None:
-        self.length_until_reverse = random.uniform(
-            PlatformConfig.variant_min_length_until_reverse, 
-            PlatformConfig.variant_max_length_until_reverse
-        )
-
     def update(self, dt: float) -> None:
         self.x += self.velocity_x * dt
         self.y += self.velocity_y * dt

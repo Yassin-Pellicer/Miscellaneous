@@ -1,19 +1,19 @@
 from dataclasses import dataclass
 
 class GameConfig:
-    width: int = 480
+    width: int = 880
     height: int = 720
     fps: int = 165
-    speed: float = 3.5
+    speed: float = 1
 
-    platform_separation: int = 400
-    platform_max_separation_variance: int = 150
-    platform_min_separation_variance: int = 50
+    platform_separation: int = 200
+    margins: int = 200
+    displacement_velocity: float = 600.0
 
     sky_color: tuple[int, int, int] = (139, 214, 247)
     text_color: tuple[int, int, int] = (29, 29, 29)
 
-    floor_height: int = 110
+    floor: int = 100
 
 class JumperConfig:
     width: int = 21
@@ -23,18 +23,15 @@ class JumperConfig:
 
     charge_coefficient = 0.01
     speed_x = 100.0
-    max_jump_strength: float = -800.0
-    gravity: float = 1200.0
-    max_fall_speed: float = 600.0
+    jump_strength: float = -1200.0
+    gravity: float = 2400.0
+    max_fall_speed: float = 3000.0
 
 class PlatformConfig:
-    width: int = 200
+    width: int = 150
     height: int = 20
 
-    variant_width: int = 100
-    variant_min_length_until_reverse: int = 50
-    variant_max_length_until_reverse: int = 200
-    variant_speed_x: int = 100
+    variant_width: int = 50
 
     x: float = GameConfig.width 
     y: float = GameConfig.height
@@ -51,13 +48,13 @@ class PlatformConfig:
 
 @dataclass
 class Observation:
-    bird_id: int
+    jumper_id: int
+    x: float
     y: float
-    velocity: float
-    next_pipe_x: float
-    next_gap_y: float
-    distance_to_pipe: float
-    gap_top: float
-    gap_bottom: float
-    distance_to_gap_center: float
+    velocity_x: float
+    velocity_y: float
+    next_platform_x: float
+    next_platform_y: float
+    horizontal_distance_to_platform: float
+    vertical_distance_to_platform: float
     score: int
