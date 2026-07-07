@@ -38,7 +38,7 @@ initial_connection      = partial_direct 0.5
 node_add_prob           = 0.03
 node_delete_prob        = 0.2
 
-num_hidden              = 0
+num_hidden              = 2
 num_inputs              = 9
 num_outputs             = 1
 
@@ -59,7 +59,7 @@ weight_mutate_rate      = 0.5
 weight_replace_rate     = 0.05
 
 [DefaultSpeciesSet]
-compatibility_threshold = 3.0
+compatibility_threshold = 2.5
 
 [DefaultStagnation]
 species_fitness_func = max
