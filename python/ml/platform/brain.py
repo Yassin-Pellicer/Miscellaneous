@@ -14,41 +14,6 @@ generation = 0
 WINNER_PATH = Path(__file__).with_name("checkpoints") / "winner.pkl"
 
 
-def _patch_neat_spawn_adjustment() -> None:
-    def adjust_spawn_exact(self, spawn_amounts, pop_size, min_species_size):
-        spawn_amounts = [
-            max(min_species_size, int(round(spawn)))
-            for spawn in spawn_amounts
-        ]
-
-        if len(spawn_amounts) * min_species_size > pop_size:
-            raise RuntimeError(
-                "Cannot satisfy species minima with pop_size={} and {} species".format(
-                    pop_size,
-                    len(spawn_amounts),
-                )
-            )
-
-        while sum(spawn_amounts) < pop_size:
-            index = min(range(len(spawn_amounts)), key=spawn_amounts.__getitem__)
-            spawn_amounts[index] += 1
-
-        while sum(spawn_amounts) > pop_size:
-            removable_indexes = [
-                index
-                for index, spawn in enumerate(spawn_amounts)
-                if spawn > min_species_size
-            ]
-            if not removable_indexes:
-                break
-            index = max(removable_indexes, key=spawn_amounts.__getitem__)
-            spawn_amounts[index] -= 1
-
-        return spawn_amounts
-
-    neat.reproduction.DefaultReproduction._adjust_spawn_exact = adjust_spawn_exact
-
-
 def _action_from_output(output: tuple[float, ...] | list[float]) -> str:
     steer = output[0]
 
@@ -145,7 +110,6 @@ def eval_genomes(genomes, neat_config):
 
 
 def run_neat():
-    _patch_neat_spawn_adjustment()
     config_path = Path(__file__).with_name("neat_config.txt")
 
     neat_config = neat.Config(
@@ -173,7 +137,6 @@ def run_neat():
 
 
 def run_winner() -> None:
-    _patch_neat_spawn_adjustment()
     config_path = Path(__file__).with_name("neat_config.txt")
 
     if not WINNER_PATH.exists():
