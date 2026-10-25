@@ -18,7 +18,7 @@ def scrollDownSelector(selector, page, delay=500):
 
   while True: 
     scrollbox.hover()
-    page.mouse.wheel(0, 800)
+    page.mouse.wheel(0, 2400)
     page.wait_for_timeout(delay)
     current = scrollbox.evaluate("""
       el => [el.scrollTop, el.scrollHeight]
@@ -41,14 +41,21 @@ def extractHTML(page, selector):
     f.write(html)
   return html
 
-def generateReport():
-  Path("reports").mkdir(exist_ok=True)
-  date = datetime.now(ZoneInfo("Europe/Madrid")).strftime("%Y-%m-%d")
-  output = f"reports/{date}.txt"
+def report_path(report_type="followers", day=None):
+  day = day or datetime.now(ZoneInfo("Europe/Madrid")).date()
+  return Path("reports") / report_type / f"{day}_{report_type}.txt"
+
+
+def generateReport(report_type="followers", day=None):
+  """Save the extracted accounts to the daily report."""
+  output = str(report_path(report_type, day))
+  Path(output).parent.mkdir(parents=True, exist_ok=True)
+
   if Path(output).exists():
     Path(FILE).unlink(missing_ok=True)
     print(f"Report already exists: {output}")
     return output
+
   command = (
     f"grep -oE 'href=\"/[^/]+/\"' {shlex.quote(FILE)} "
     "| cut -d '\"' -f2 "
@@ -61,12 +68,15 @@ def generateReport():
     executable="/bin/bash",
     check=True
   )
+
   Path(FILE).unlink(missing_ok=True)
   print(f"Report saved to {output}")
+
   return output
   
 
-def loop(page, selector_list, delay=500):
+def loop(page, selector_list, delay=1000, report_type="followers", day=None):
+  """Scroll the account list and save its daily report."""
   clickSelector(selector_list[0], page)
   scrollDownSelector(
     selector_list[1],
@@ -74,5 +84,5 @@ def loop(page, selector_list, delay=500):
     delay
   )
   extractHTML(page, selector_list[1])
-  report = generateReport()
-  return report
+  return generateReport(report_type, day)
+
