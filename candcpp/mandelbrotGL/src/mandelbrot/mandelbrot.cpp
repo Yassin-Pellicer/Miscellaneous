@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
@@ -59,6 +60,13 @@ namespace
     mpfr_snprintf(buffer.data(), buffer.size(), "%.*Rg", digits, value);
     return buffer.data();
   }
+
+  std::string decimalString(double value)
+  {
+    char buffer[32];
+    std::snprintf(buffer, sizeof(buffer), "%.17g", value);
+    return buffer;
+  }
 }
 
 /**
@@ -99,6 +107,12 @@ Mandelbrot::Mandelbrot(
   modeLocation = glGetUniformLocation(program, "renderMode");
   pixelScaleLocation = glGetUniformLocation(program, "pixelScale");
   samplesLocation = glGetUniformLocation(program, "sampleCount");
+  paletteLocation = glGetUniformLocation(program, "palette");
+  juliaLocation = glGetUniformLocation(program, "juliaMode");
+  juliaZeroLocation = glGetUniformLocation(program, "juliaZero");
+  juliaDistanceLocation = glGetUniformLocation(program, "juliaDistance");
+  juliaParameterLocation = glGetUniformLocation(program, "juliaC");
+  escapeRadiusLocation = glGetUniformLocation(program, "escapeRadiusSquared");
 
   computeReferenceOrbit(iterationBudget());
 }
@@ -204,7 +218,8 @@ int Mandelbrot::iterationBudget() const
 {
   if (!automaticIterations)
     return iterationLimit;
-  const int detail = static_cast<int>(128.0 + 64.0 * std::log2(std::max(1.0, zoom)));
+  const int detail = static_cast<int>((isJulia() ? 512.0 : 128.0) +
+                                      64.0 * std::log2(std::max(1.0, zoom)));
   return std::min(iterationLimit, detail);
 }
 
@@ -251,13 +266,89 @@ void Mandelbrot::redraw(int width, int height)
     present(framebuffers[0], previewWidth, previewHeight, width, height);
 }
 
+/** @brief Select the escape-color palette. */
+void Mandelbrot::setPalette(int value)
+{
+  if (value < 0 || value >= paletteCount)
+    throw std::invalid_argument("Invalid palette");
+  if (palette == value)
+    return;
+  palette = value;
+  ++revision;
+}
+
+/** @brief Update slider values while retaining untouched precise components. */
+void Mandelbrot::setJuliaParameter(double x, double y)
+{
+  setJuliaParameter(x == juliaX ? juliaReal : decimalString(x),
+                    y == juliaY ? juliaImaginary : decimalString(y));
+}
+
+/** @brief Apply decimal Julia values without reducing them to double precision. */
+void Mandelbrot::setJuliaParameter(const std::string &x, const std::string &y)
+{
+  mpfr_t cx, cy;
+  const auto bits = std::max<mpfr_prec_t>(256, 4 * std::max(x.size(), y.size()));
+  mpfr_inits2(bits, cx, cy, (mpfr_ptr)0);
+  const bool valid = mpfr_set_str(cx, x.c_str(), 10, MPFR_RNDN) == 0 &&
+                     mpfr_set_str(cy, y.c_str(), 10, MPFR_RNDN) == 0 &&
+                     mpfr_number_p(cx) && mpfr_number_p(cy) &&
+                     mpfr_cmp_d(cx, -2.0) >= 0 && mpfr_cmp_d(cx, 2.0) <= 0 &&
+                     mpfr_cmp_d(cy, -2.0) >= 0 && mpfr_cmp_d(cy, 2.0) <= 0;
+  const double nextX = mpfr_get_d(cx, MPFR_RNDN), nextY = mpfr_get_d(cy, MPFR_RNDN);
+  const bool zero = mpfr_zero_p(cx) && mpfr_zero_p(cy);
+  mpfr_clears(cx, cy, (mpfr_ptr)0);
+  if (!valid)
+    throw std::invalid_argument("Julia coordinates must be finite numbers between -2 and 2");
+  if (x == juliaReal && y == juliaImaginary && juliaMode)
+    return;
+  juliaReal = x;
+  juliaImaginary = y;
+  juliaX = nextX;
+  juliaY = nextY;
+  juliaParameterZero = zero;
+  juliaMode = true;
+  orbitDirty = true;
+  ++revision;
+}
+
+/** @brief Switch fractal modes without changing the selected Julia parameter. */
+void Mandelbrot::setJuliaMode(bool enabled)
+{
+  if (juliaMode == enabled)
+    return;
+  juliaMode = enabled;
+  orbitDirty = true;
+  ++revision;
+}
+
+/** @brief Preserve distance to the Julia unit circle even at deep zooms. */
+void Mandelbrot::updateJuliaUniforms()
+{
+  glUniform2d(juliaParameterLocation, juliaX, juliaY);
+  if (!juliaParameterZero)
+    return;
+  mpfr_t x, y, distance, square;
+  mpfr_inits2(orbitPrecision(zoom), x, y, distance, square, (mpfr_ptr)0);
+  mpfr_set_str(x, centerX.c_str(), 10, MPFR_RNDN);
+  mpfr_set_str(y, centerY.c_str(), 10, MPFR_RNDN);
+  mpfr_mul(distance, x, x, MPFR_RNDN);
+  mpfr_mul(square, y, y, MPFR_RNDN);
+  mpfr_add(distance, distance, square, MPFR_RNDN);
+  mpfr_sub_ui(distance, distance, 1, MPFR_RNDN);
+  glUniform2d(centerLocation, mpfr_get_d(x, MPFR_RNDN), mpfr_get_d(y, MPFR_RNDN));
+  glUniform1d(juliaDistanceLocation, mpfr_get_d(distance, MPFR_RNDN));
+  mpfr_clears(x, y, distance, square, (mpfr_ptr)0);
+}
+
 /**
  * @brief Estimate per-pixel GPU work for preview scaling.
  * @return Estimated work in iteration-weighted units.
  */
 double Mandelbrot::previewPixelWork() const
 {
-  return iterationBudget() * (zoom <= 32.0 ? 1.0 : 4.0);
+  return 2.0 * (isJulia() && juliaParameterZero ? 1.0 :
+      iterationBudget() * (zoom <= 32.0 ? 1.0 : 4.0));
 }
 
 /** @brief Poll completed GPU timer queries and adapt preview/tile sizes. */
@@ -407,7 +498,7 @@ void Mandelbrot::draw(int width, int height, bool interactive)
   previewHeight = std::max(1, static_cast<int>(height * previewScale));
   const auto query = beginTiming(true, previewWidth * previewHeight);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[0]);
-  drawPass(width, height, previewWidth, previewHeight, iterationBudget(), 1);
+  drawPass(width, height, previewWidth, previewHeight, iterationBudget(), 2);
   present(framebuffers[0], previewWidth, previewHeight, width, height);
   if (query)
     glEndQuery(GL_TIME_ELAPSED);
@@ -468,7 +559,8 @@ void Mandelbrot::drawPass(int width, int height, int renderWidth, int renderHeig
                           int count, int samples)
 {
   const int mode = zoom <= 32.0 ? 0 : (zoom < 1e8 ? 1 : 2);
-  if (mode == 2 && (orbitDirty || (!referenceEscaped && referenceIterations < count)))
+  const bool juliaZero = isJulia() && juliaParameterZero;
+  if (!juliaZero && mode == 2 && (orbitDirty || (!referenceEscaped && referenceIterations < count)))
     computeReferenceOrbit(count);
 
   glViewport(0, 0, renderWidth, renderHeight);
@@ -482,6 +574,12 @@ void Mandelbrot::drawPass(int width, int height, int renderWidth, int renderHeig
 
   glUniform1d(zoomLocation, zoom);
   glUniform2d(centerLocation, viewCenterX, viewCenterY);
+  glUniform1i(paletteLocation, palette);
+  glUniform1i(juliaLocation, isJulia());
+  glUniform1i(juliaZeroLocation, juliaZero);
+  glUniform1d(escapeRadiusLocation, isJulia() ? std::max(4.0, juliaX * juliaX + juliaY * juliaY) : 4.0);
+  if (isJulia())
+    updateJuliaUniforms();
   glUniform1i(modeLocation, mode);
   glUniform2f(pixelScaleLocation, float(width) / renderWidth, float(height) / renderHeight);
   glUniform1i(samplesLocation, samples);
@@ -508,6 +606,10 @@ void Mandelbrot::computeReferenceOrbit(int count)
   static_assert(sizeof(OrbitPoint) == 16);
 
   mpfr_prec_t bits = orbitPrecision(zoom);
+  // Near the Julia critical point, squaring a pixel-sized offset needs
+  // twice the zoom precision before adding the fixed parameter.
+  if (isJulia())
+    bits = std::max(bits, static_cast<mpfr_prec_t>(std::ceil(2.0 * std::log2(zoom))) + 128);
 
   mpfr_t cx, cy, zx, zy, nx, ny, a, b;
 
@@ -526,14 +628,25 @@ void Mandelbrot::computeReferenceOrbit(int count)
 
   viewCenterX = mpfr_get_d(cx, MPFR_RNDN);
   viewCenterY = mpfr_get_d(cy, MPFR_RNDN);
-  mpfr_set_zero(zx, 0);
-  mpfr_set_zero(zy, 0);
+  if (isJulia())
+  {
+    mpfr_set(zx, cx, MPFR_RNDN);
+    mpfr_set(zy, cy, MPFR_RNDN);
+    mpfr_set_str(cx, juliaReal.c_str(), 10, MPFR_RNDN);
+    mpfr_set_str(cy, juliaImaginary.c_str(), 10, MPFR_RNDN);
+  }
+  else
+  {
+    mpfr_set_zero(zx, 0);
+    mpfr_set_zero(zy, 0);
+  }
 
   std::vector<OrbitPoint> orbit;
   orbit.reserve(count + 1);
   referenceEscaped = false;
 
-  orbit.push_back({0.0, 0.0});
+  orbit.push_back({mpfr_get_d(zx, MPFR_RNDN), mpfr_get_d(zy, MPFR_RNDN)});
+  const double escapeRadius = isJulia() ? std::max(4.0, juliaX * juliaX + juliaY * juliaY) : 4.0;
 
   for (int i = 0; i < count; ++i)
   {
@@ -555,7 +668,7 @@ void Mandelbrot::computeReferenceOrbit(int count)
     mpfr_mul(a, zx, zx, MPFR_RNDN);
     mpfr_mul(b, zy, zy, MPFR_RNDN);
     mpfr_add(a, a, b, MPFR_RNDN);
-    if (mpfr_cmp_ui(a, 4) > 0)
+    if (mpfr_cmp_d(a, escapeRadius) > 0)
     {
       referenceEscaped = true;
       break;

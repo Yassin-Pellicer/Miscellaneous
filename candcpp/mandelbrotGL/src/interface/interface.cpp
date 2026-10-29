@@ -36,6 +36,7 @@ Interface::Interface(GLFWwindow *window, Mandelbrot &fractal)
     throw std::runtime_error("Cannot initialize interface renderer");
   }
   synchronize();
+  synchronizeJulia();
 }
 
 /** @brief Release interface resources and restore GLFW callbacks. */
@@ -58,11 +59,22 @@ void Interface::synchronize()
   error.clear();
 }
 
+/** @brief Copy the exact Julia parameter into the input fields. */
+void Interface::synchronizeJulia()
+{
+  juliaReal = fractal.getJuliaReal();
+  juliaImaginary = fractal.getJuliaImaginary();
+  editingJulia = false;
+  juliaError.clear();
+}
+
 /** @brief Build controls and apply validated view changes. */
 void Interface::update()
 {
   if (!editing)
     synchronize();
+  if (!editingJulia)
+    synchronizeJulia();
 
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
@@ -95,8 +107,60 @@ void Interface::update()
     ImGui::SameLine();
     if (ImGui::Button("Current view"))
       synchronize();
+    ImGui::SameLine();
+    if (ImGui::Button("Reset view"))
+    {
+      fractal.setView(fractal.isJulia() ? "0" : "-0.5", "0", 1.0,
+                      fractal.getIterationLimit(), fractal.getAutomaticIterations());
+      synchronize();
+    }
     if (!error.empty())
       ImGui::TextWrapped("%s", error.c_str());
+
+    ImGui::Separator();
+    int palette = fractal.getPalette();
+    if (ImGui::Combo("Palette", &palette,
+                     "Classic\0Ocean\0Fire\0Monochrome\0Sunset\0Forest\0Ice\0Neon\0"
+                     "Gold\0Purple\0Candy\0Rainbow\0"))
+      fractal.setPalette(palette);
+
+    bool julia = fractal.isJulia();
+    if (ImGui::Checkbox("Julia mode", &julia))
+      fractal.setJuliaMode(julia);
+    editingJulia |= ImGui::InputText("c real", &juliaReal);
+    editingJulia |= ImGui::InputText("c imaginary", &juliaImaginary);
+    if (ImGui::Button("Apply c"))
+    {
+      try
+      {
+        fractal.setJuliaParameter(juliaReal, juliaImaginary);
+        synchronizeJulia();
+      }
+      catch (const std::exception &e)
+      {
+        juliaError = e.what();
+        editingJulia = true;
+      }
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Reset c"))
+    {
+      fractal.setJuliaParameter("0", "0");
+      synchronizeJulia();
+    }
+    if (!juliaError.empty())
+      ImGui::TextWrapped("%s", juliaError.c_str());
+    double juliaX = fractal.getJuliaX(), juliaY = fractal.getJuliaY();
+    const double minimum = -2.0, maximum = 2.0;
+    bool changed = ImGui::SliderScalar("Julia c X", ImGuiDataType_Double, &juliaX,
+                                       &minimum, &maximum, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+    changed |= ImGui::SliderScalar("Julia c Y", ImGuiDataType_Double, &juliaY,
+                                    &minimum, &maximum, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+    if (changed)
+    {
+      fractal.setJuliaParameter(juliaX, juliaY);
+      synchronizeJulia();
+    }
   }
   ImGui::End();
 }

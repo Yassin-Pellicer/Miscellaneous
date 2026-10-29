@@ -9,6 +9,8 @@
 class Mandelbrot
 {
 public:
+  static constexpr int paletteCount = 12;
+
   Mandelbrot(
       const std::string &x,
       const std::string &y,
@@ -23,17 +25,28 @@ public:
   void zoomBy(double factor, double x = 0.0, double y = 0.0);
   void pan(double x, double y);
   void setView(const std::string &x, const std::string &y, double z, int n, bool automatic);
+  void setPalette(int value);
+  void setJuliaParameter(double x, double y);
+  void setJuliaParameter(const std::string &x, const std::string &y);
+  void setJuliaMode(bool enabled);
   const std::string &getCenterX() const { return centerX; }
   const std::string &getCenterY() const { return centerY; }
   double getZoom() const { return zoom; }
   int getIterationLimit() const { return iterationLimit; }
   int getIterations() const { return iterationBudget(); }
   bool getAutomaticIterations() const { return automaticIterations; }
+  int getPalette() const { return palette; }
+  double getJuliaX() const { return juliaX; }
+  double getJuliaY() const { return juliaY; }
+  const std::string &getJuliaReal() const { return juliaReal; }
+  const std::string &getJuliaImaginary() const { return juliaImaginary; }
+  bool isJulia() const { return juliaMode; }
   std::uint64_t viewRevision() const { return revision; }
 
 private:
   int iterationBudget() const;
   double previewPixelWork() const;
+  void updateJuliaUniforms();
   void computeReferenceOrbit(int count);
   void ensureTargets(int width, int height);
   void drawPass(int width, int height, int renderWidth, int renderHeight,
@@ -49,6 +62,13 @@ private:
   double zoom;
   int iterationLimit;
   bool automaticIterations = true;
+  int palette = 0;
+  bool juliaMode = false;
+  double juliaX = -0.8;
+  double juliaY = 0.156;
+  std::string juliaReal = "-0.8";
+  std::string juliaImaginary = "0.156";
+  bool juliaParameterZero = false;
   int referenceIterations = 0;
   bool referenceEscaped = false;
   std::uint64_t revision = 0;
@@ -88,4 +108,10 @@ private:
   GLint modeLocation = -1;
   GLint pixelScaleLocation = -1;
   GLint samplesLocation = -1;
+  GLint paletteLocation = -1;
+  GLint juliaLocation = -1;
+  GLint juliaZeroLocation = -1;
+  GLint juliaDistanceLocation = -1;
+  GLint juliaParameterLocation = -1;
+  GLint escapeRadiusLocation = -1;
 };
