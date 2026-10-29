@@ -6,7 +6,7 @@ from pathlib import Path
 from playwright.sync_api import expect, sync_playwright # type: ignore
 
 PROFILE = str(Path(__file__).parent / "whatsapp_chrome_profile")
-WHATSAPP_PHONE = "XXXXXXXXXXX"  # Set your own number including country code, digits only. Example: "34600123456"
+WHATSAPP_PHONE = "34603786942"  # Set your own number including country code, digits only. Example: "34600123456"
 
 def report_date(report):
   return date.fromisoformat(Path(report).stem.split("_", 1)[0])
